@@ -1,0 +1,212 @@
+## 0.19.0
+- __section__:Features
+- add NEAR AI provider integration
+- add redacted diagnostic issue reports
+- add Vietnamese i18n for slash command descriptions
+- agent-routing: model-only agent routes (set the verifier or any agent's model on the current provider)
+- compact: auto-compact prompt on /resume + determinate progress bar
+- config: add compactModel option to use a separate model for compaction
+- ctx: add /ctx context window visualization and token bars to /cost
+- gemini-vertex: native Gemini Vertex client and auth helpers (1/3)
+- provider: add Fireworks AI as official OpenAI-compatible provider
+- web: rebuild landing as Astro static site with gitlawb theme and full docs
+- __section__:Bug Fixes
+- avoid file suggestion OOM on large repos
+- copilot: limit sub-agent concurrency to reduce Premium Request usage
+- gitDiff: keep hunk content lines beginning with -- or ++
+- mcp: demote successful stdio startup stderr
+- Ollama max output token override
+- ollama: parse text-based tool calls as fallback
+- plugins: prevent ENOENT on Windows marketplace cache finalization
+- read: improve oversized file guidance
+- rename "Claude" to "OpenClaude" in feedback survey prompt
+- sandbox temp dir fallback
+- security: bundle real sandbox runtime in open CLI
+- session: filter Anthropic-only params from 3P provider requests
+- startup provider validation fallback
+- suggestions: stop slash-command dropdown freezing on a throwing getter
+- tool-search: enable MCP tool deferral on converted-wire providers
+- typecheck: correct fetch mock type casts in test files
+- typecheck: expand cachedMicrocompact stub exports
+- typecheck: recreate missing CLI Transport interface
+- typecheck: reduce error baseline by 89 across 8 files
+- vision handling for OpenAI-compatible models
+- __section__:Performance Improvements
+- cli: restore --version fast path with dynamic provider imports
+
+## 0.18.0
+- __section__:Features
+- add .gitattributes to enforce LF line endings
+- enable HISTORY_SNIP — model-callable snip tool for context management
+- extend --fallback-model to interactive REPL sessions
+- github: expose all 21 Copilot models with context window metadata
+- goal: add session-scoped /goal continuation
+- opengateway: surface the gateway's "auto" smart-routing model in /model
+- provider: add Atlas Cloud as official OpenAI-compatible provider
+- __section__:Bug Fixes
+- add error context to silent catches and debugger detection
+- agent-routing: support API model aliases
+- api: honor OpenAI-compatible retry classification
+- api: retry once with provider-capped max_tokens
+- claudemd: gate User-scope external @include behind hasClaudeMdEx…
+- context: avoid noisy metadata fallback errors
+- mcp: fail-closed on token count error + respect maxChars budget
+- mcp: pass MCP stdio server args as separate array elements to pr…
+- openai-shim: guarantee reasoning_content continuity for DeepSeek…
+- openai-shim: include text for image-only user content
+- provider: preserve explicit startup env
+- replace codex input_text with standard text type in generic resp
+- typecheck: add MCP component view types
+- typecheck: add missing type aliases to message and tools stubs
+- typecheck: add missing xai entry to deprecation retirement date maps (#1509) (1d90960)
+- typecheck: add plugin command view types
+- typecheck: add proper type parameters to useState(null) hooks (#1513) (0e30ee8)
+- typecheck: add wizard agent creation types
+- typecheck: annotate diff rendering props
+- typecheck: declare bundled markdown and macro fields
+- typecheck: declare Ink JSX intrinsics
+- typecheck: declare optional native modules
+- typecheck: import bun test helpers in truncate test
+- typecheck: narrow remote agent SDK logs
+- typecheck: recreate missing FeedbackSurvey utils
+- typecheck: recreate missing Spinner types
+- typecheck: replace dead-code literal comparisons with isAntEmployee()
+- typecheck: restore control protocol type exports
+- typecheck: tighten permission rule UI types
+- typecheck: type beta header accumulator
+- typecheck: type cache-busted credential tests
+- typecheck: type Doctor screen state
+- typecheck: type FileWrite rejection state
+- typecheck: type Grove dialog state
+- typecheck: type gRPC stream messages
+- typecheck: type MCP doctor test fixtures
+- typecheck: type MCP XAA auth storage
+- typecheck: type provider diagnostic tests
+- typecheck: type secure storage command output
+- typecheck: type session storage test fixtures
+- typecheck: type stats dialog state
+- typecheck: type tool test fixtures
+- __section__:Performance Improvements
+- attachments: skip skill listings for utility forks
+
+## 0.17.1
+- __section__:Bug Fixes
+- typecheck: type GitHub app setup flow
+- typecheck: type search UI state
+
+## 0.17.0
+- __section__:Features
+- add conversation cache and session persistence
+- memory optimization to prevent OOM in multi-session scenarios
+- minimax: add MiniMax M3 model with 1M context window
+- nvidia-nim: dynamic model discovery via integrate.api.nvidia.com
+- opengateway: add MiniMax M3 and Qwen 3.7 Max to the model catalog
+- opengateway: Gemini 3.1 Flash Lite GA model id
+- provider: auto-switch on rate limit via providerFallbackChain
+- sponsors: add Atlas Cloud sponsor and sponsored tip
+- xiaomi: retire deprecated MiMo V2 Pro and V2 Omni
+- __section__:Bug Fixes
+- api: tighten reasoning_content heuristic to prevent false-positi…
+- BashTool: include captured output in non-zero-exit error result
+- cron: enforce MAX_CRON_PROMPT_CHARS cap on durable cron prompt l…
+- plugins: use mergeHooksSettings in marketplace supplement path
+- preserve raw mode across component re-renders (issue #843)
+- promptinput: keep bash-mode ! out of the local mirror
+- security: prevent CRLF injection, path injection, and error message leakage
+- show all configured Mistral models and fix model selection priority
+- show vision-specific error when provider returns 404 for image requests
+- test: stop use-input test from leaking a global stdin mock
+- typecheck: make session history cache variant-safe
+- typecheck: narrow hook event counts
+- typecheck: restore AppState hook generics
+- typecheck: restore proactive module import surface
+- typecheck: restore typed add-dir source
+- use mistral-vibe-cli-latest as default model for Mistral AI
+- vscode: send schema-valid permission responses
+
+## 0.16.1
+- __section__:Bug Fixes
+- ci: build before unit tests in release workflow
+
+## 0.16.0
+- __section__:Features
+- doctor: warn local-model users about large context contributors
+- enable MCP_SKILLS — discover skill:// resources as invocable skills
+- provider: add OpenCode Zen/Go subscription support
+- set process.title to 'openclaude'
+- __section__:Bug Fixes
+- agents: route configured agent model overrides
+- autocompact: retry circuit breaker after cooldown
+- bash: show output for ! shell commands
+- build: restore /dream slash command in bundled CLI
+- ci: scan PR head for intent checks
+- docs: update Xiaomi MiMo API URL in README.
+- fork: render forked-worker messages, drop unmirrored /fork command
+- ink: correct stringWidth JS fallback for symbol characters
+- launcher: route direct Node launch paths through launcher
+- loader: batch markdown reads + cap file size to unblock startup
+- ollama: cap deepseek v4 pro cloud output tokens
+- onboarding: bound preflight probe + recover from connectivity failure
+- provider: allow remote Ollama without OPENAI_API_KEY (#952) (01ffbb6)
+- provider: require API key input when adding OpenGateway
+- query: keep tool failure guard across unrelated successes
+- release: verify npm latest tag and document @latest install
+- repl: show permission prompts while draft input is present (#1393) (70b4b07)
+- sandbox: guard annotateStderrWithSandboxFailures against missing runtime method (fixes Bash on builds without sandbox-runtime)
+- teammate-progress: keep cumulative token+tool counts across prompts
+- test: prevent providerProfiles config mock from leaking across files
+- thinking: disable thinking for unsupported Ollama models
+- third-party provider compat — update, metrics, and refusal message
+
+## 0.15.0
+- __section__:Features
+- agents: set active session agent from agents menu
+- configure API retry backoff
+- query: robust multi-lingual and structural continuation nudge
+- safety: warn at startup when 3P provider + permissive mode skip the AI classifier
+- __section__:Bug Fixes
+- agent: allow custom model overrides
+- attribution: make git attribution opt-in by default
+- codex-stream: recover tool args delivered only via done events (#1262) (2d26a46)
+- codex: allow credential storage fallback
+- json-schema: support top-level non-object roots via wrap/unwrap (#1261) (07d9b4f)
+- model: include profile models in descriptor picker
+- route MiniMax compacting through Anthropic-compatible API
+- watchers: debounce skills and settings reload bursts
+
+## 0.14.0
+- __section__:Features
+- diagnostics: show request payload size breakdown
+- opengateway: require API key on /v1/* and switch to bearer auth
+- xai: add xAI/Grok OAuth provider (browser + device-code)
+- __section__:Bug Fixes
+- add 5-minute timeout to QueryGuard to prevent infinite spinner
+- allow non-OpenAI providers to skip OPENAI_API_KEY check
+- bash: preserve captured stdout in error message on non-zero exit
+- compact: clear native tool results after time compaction
+- grpc: register built-in agents so Agent tool isn't always empty
+- harden XAA OAuth callback state handling
+- input: preserve split utf8 keypresses
+- MiMo remove unsupported body fields and preserve reasoning content
+- monitor: close permission dialog after selection
+- query: stop repeated tool-failure loops
+- recovery: keep thinking blocks on resume for reasoning-echo providers
+- retry: adjust max_tokens on OpenRouter 402 credit shortfall (#1263) (892c054)
+- stdin,mcp: guard rawModeEnabledCount and defer MCP connections to prevent input freeze
+- TaskListV2: revert overflowX hidden that hides task text labels
+- treat blank Read.pages as omitted
+- xml: guard escapeXml/escapeXmlAttr against null and undefined
+
+## 0.13.0
+- __section__:Features
+- export: add Markdown and JSON conversation exports
+- __section__:Bug Fixes
+- bashPermissions: apply MAX_SUBCOMMANDS cap in sandbox auto-allow path
+- gemini: parse raw tool call text
+- spinner: prevent layout shift during thinking and orphaned task icons
+- websearch: surface adapter failure when auto mode falls back to native
+
+## 0.12.1
+- __section__:Bug Fixes
+- entrypoint: apply --max-old-space-size=8192 universally, not just CCR
+- gemini: preserve tool calls through opengateway

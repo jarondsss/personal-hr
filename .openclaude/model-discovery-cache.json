@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "entries": {
+    "custom:f701ffa70095edf8": {
+      "models": [
+        {
+          "id": "jajang",
+          "apiName": "jajang",
+          "label": "jajang"
+        },
+        {
+          "id": "ag/gemini-3-flash-agent",
+          "apiName": "ag/gemini-3-flash-agent",
+          "label": "ag/gemini-3-flash-agent"
+        },
+        {
+          "id": "ag/gemini-3.5-flash-low",
+          "apiName": "ag/gemini-3.5-flash-low",
+          "label": "ag/gemini-3.5-flash-low"
+        },
+        {
+          "id": "ag/gemini-3.5-flash-extra-low",
+          "apiName": "ag/gemini-3.5-flash-extra-low",
+          "label": "ag/gemini-3.5-flash-extra-low"
+        },
+        {
+          "id": "ag/gemini-pro-agent",
+          "apiName": "ag/gemini-pro-agent",
+          "label": "ag/gemini-pro-agent"
+        },
+        {
+          "id": "ag/gemini-3.1-pro-low",
+          "apiName": "ag/gemini-3.1-pro-low",
+          "label": "ag/gemini-3.1-pro-low"
+        },
+        {
+          "id": "ag/claude-sonnet-4-6",
+          "apiName": "ag/claude-sonnet-4-6",
+          "label": "ag/claude-sonnet-4-6"
+        },
+        {
+          "id": "ag/claude-opus-4-6-thinking",
+          "apiName": "ag/claude-opus-4-6-thinking",
+          "label": "ag/claude-opus-4-6-thinking"
+        },
+        {
+          "id": "ag/gpt-oss-120b-medium",
+          "apiName": "ag/gpt-oss-120b-medium",
+          "label": "ag/gpt-oss-120b-medium"
+        },
+        {
+          "id": "ag/gemini-3-flash",
+          "apiName": "ag/gemini-3-flash",
+          "label": "ag/gemini-3-flash"
+        },
+        {
+          "id": "gc/gemini-3.1-pro-preview",
+          "apiName": "gc/gemini-3.1-pro-preview",
+          "label": "gc/gemini-3.1-pro-preview"
+        },
+        {
+          "id": "gc/gemini-3-pro-preview",
+          "apiName": "gc/gemini-3-pro-preview",
+          "label": "gc/gemini-3-pro-preview"
+        },
+        {
+          "id": "gc/gemini-3-flash-preview",
+          "apiName": "gc/gemini-3-flash-preview",
+          "label": "gc/gemini-3-flash-preview"
+        },
+        {
+          "id": "gc/gemini-3.1-flash-lite-preview",
+          "apiName": "gc/gemini-3.1-flash-lite-preview",
+          "label": "gc/gemini-3.1-flash-lite-preview"
+        },
+        {
+          "id": "gc/gemini-2.5-pro",
+          "apiName": "gc/gemini-2.5-pro",
+          "label": "gc/gemini-2.5-pro"
+        },
+        {
+          "id": "gc/gemini-2.5-flash",
+          "apiName": "gc/gemini-2.5-flash",
+          "label": "gc/gemini-2.5-flash"
+        },
+        {
+          "id": "gc/gemini-2.5-flash-lite",
+          "apiName": "gc/gemini-2.5-flash-lite",
+          "label": "gc/gemini-2.5-flash-lite"
+        }
+      ],
+      "updatedAt": 1781860263489,
+      "error": null
+    }
+  }
+}

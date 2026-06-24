@@ -1,0 +1,1 @@
+- [No test framework](no-test-framework.md) — validate with `next build` + `eslint`, no jest/vitest

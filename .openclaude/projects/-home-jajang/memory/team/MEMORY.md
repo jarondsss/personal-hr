@@ -1,0 +1,2 @@
+- [Mastermove Landing — client project](project-mastermove-landing.md) — active client landing page, design revisions requested 2026-06-19
+- [Mastermove Landing — GitHub repo](reference-mastermove-repo.md) — repo URL and Juan's GitHub username

@@ -1,0 +1,2 @@
+- [Juan — user profile](user-juan-profile.md) — beginner programmer, builds client software, wants blunt critical feedback and senior guidance
+- [Append don't overwrite](feedback-append-dont-overwrite.md) — when editing config/skill files, append new content, never replace the whole file

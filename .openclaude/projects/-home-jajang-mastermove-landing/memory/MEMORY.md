@@ -1,0 +1,1 @@
+- [User Jajang](user-jajang.md) — casual Indonesian speaker, git user jarondsss, git identity configured
