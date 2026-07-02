@@ -2,8 +2,10 @@
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { writeFile, unlink } from "fs/promises"
+import { writeFile, unlink, readFile } from "fs/promises"
 import path from "path"
+import PizZip from "pizzip"
+import Docxtemplater from "docxtemplater"
 
 export async function getDocumentTemplates() {
   return await prisma.documentTemplate.findMany({
@@ -50,6 +52,65 @@ export async function deleteTemplate(id: string, fileName: string) {
   })
 
   revalidatePath('/dashboard/documents')
+}
+
+export async function generateEmployeeContract(employeeId: string) {
+  try {
+    const employee = await prisma.employee.findUnique({
+      where: { id: employeeId }
+    })
+    if (!employee) return { error: "Employee not found" }
+
+    // Find the contract template
+    const template = await prisma.documentTemplate.findFirst({
+      where: { name: { contains: 'PKWT' } }
+    })
+    if (!template) return { error: "Contract template not found. Please upload a PKWT template first." }
+
+    const filePath = path.join(process.cwd(), 'public/templates', template.fileName)
+    const content = await readFile(filePath, 'binary')
+    const zip = new PizZip(content)
+
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+      delimiters: { start: '[', end: ']' }
+    })
+
+    const docData = {
+      "Nama Lengkap Karyawan": employee.fullName,
+      "Tempat/Tgl Lahir Karyawan": (employee.birthPlace && employee.birthDate) 
+        ? `${employee.birthPlace}, ${new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(employee.birthDate))}` 
+        : "-",
+      "Jenis Kelamin Karyawan": employee.gender || "-",
+      "Alamat Karyawan": employee.address || "-",
+      "No KTP Karyawan": employee.idCardNumber || "-",
+      "Jabatan Karyawan": employee.jobTitle,
+      "Tanggal Mulai Kontrak": employee.joinDate 
+        ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(employee.joinDate)) 
+        : "-",
+      "Tanggal Selesai Kontrak": employee.endContract 
+        ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(employee.endContract)) 
+        : "-",
+      "Gaji Karyawan": new Intl.NumberFormat('id-ID').format(employee.salary),
+      "Tanggal kontrak": new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date())
+    }
+
+    doc.render(docData)
+
+    const buffer = doc.getZip().generate({
+      type: 'nodebuffer',
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    })
+
+    const base64 = buffer.toString('base64')
+    const filename = `${template.name}_${employee.fullName.replace(/\s+/g, '_')}.docx`
+
+    return { base64, filename }
+  } catch (error: any) {
+    console.error("generateEmployeeContract error:", error)
+    return { error: error.message || "Failed to generate contract" }
+  }
 }
 
 // Ensure defaults exist

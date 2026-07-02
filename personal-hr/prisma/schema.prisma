@@ -33,6 +33,14 @@ model Employee {
   joinDate       DateTime
   startContract  DateTime?
   endContract    DateTime?
+  birthPlace     String?
+  birthDate      DateTime?
+  gender         String?
+  idCardNumber   String?
+  npwp           String?
+  bankName       String?  @default("BCA")
+  bankAccount    String?
+  taxStatus      String?
   address        String?
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
@@ -147,4 +155,13 @@ model DocumentTemplate {
   fileName  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model OnboardingLink {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  name      String
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
 }

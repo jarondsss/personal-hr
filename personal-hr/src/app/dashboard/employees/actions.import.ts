@@ -30,20 +30,25 @@ export async function importEmployeesCSV(data: any[]) {
           fullName: row.fullName,
           email: row.email,
           phone: row.phone?.trim() || null,
+          phone2: row.phone2?.trim() || null,
           idCardNumber: row.idCardNumber?.trim() || null,
-          npwp: row.npwp?.trim() || null,
-          githubUsername: row.githubUsername?.trim() || null,
-          bankName: row.bankName?.trim() || 'BCA',
-          bankAccount: row.bankAccount?.trim() || null,
           gender: row.gender?.trim() || null,
           birthPlace: row.birthPlace?.trim() || null,
           birthDate: row.birthDate ? new Date(row.birthDate) : null,
+          npwp: row.npwp?.trim() || null,
+          taxStatus: row.taxStatus?.trim() || null,
+          bankName: row.bankName?.trim() || 'BCA',
+          bankAccount: row.bankAccount?.trim() || null,
           address: row.address?.trim() || null,
           jobTitle: row.jobTitle?.trim() || 'TBD', // Default fallback
           status: row.status?.trim() || 'Active', // Default
           salary: parseFloat(row.salary) || 0,
           salaryType: row.salaryType?.trim() || 'GROSS',
           joinDate: row.joinDate ? new Date(row.joinDate) : new Date(), // Default to today
+          startContract: row.startContract ? new Date(row.startContract) : null,
+          endContract: row.endContract ? new Date(row.endContract) : null,
+          discordId: row.discordId?.trim() || null,
+          githubUsername: row.githubUsername?.trim() || null,
         }
       })
       successCount++;

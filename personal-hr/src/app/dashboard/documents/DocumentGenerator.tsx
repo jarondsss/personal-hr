@@ -27,12 +27,18 @@ export default function DocumentGenerator({
   const tpl = templates.find(t => t.id === selectedTemplate)
 
   // Pre-calculate data for preview and generation
+  // Changed keys to match user's template using [Bracket] format in docx
   const docData = emp ? {
-    fullName: emp.fullName,
-    jobTitle: emp.jobTitle,
-    salary: new Intl.NumberFormat('id-ID').format(emp.salary),
-    startDate: new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(emp.joinDate)),
-    currentDate: new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date())
+    "Nama Lengkap Karyawan": emp.fullName,
+    "Tempat/Tgl Lahir Karyawan": (emp.birthPlace && emp.birthDate) ? `${emp.birthPlace}, ${new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(emp.birthDate))}` : "-",
+    "Jenis Kelamin Karyawan": emp.gender || "-",
+    "Alamat Karyawan": emp.address || "-",
+    "No KTP Karyawan": emp.idCardNumber || "-",
+    "Jabatan Karyawan": emp.jobTitle,
+    "Tanggal Mulai Kontrak": emp.joinDate ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(emp.joinDate)) : "-",
+    "Tanggal Selesai Kontrak": emp.endContract ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(emp.endContract)) : "-",
+    "Gaji Karyawan": new Intl.NumberFormat('id-ID').format(emp.salary),
+    "Tanggal kontrak": new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date())
   } : null
 
   const handleGenerate = async () => {
@@ -46,9 +52,12 @@ export default function DocumentGenerator({
 
       const arrayBuffer = await response.arrayBuffer()
       const zip = new PizZip(arrayBuffer)
+      
+      // Configure docxtemplater to use [ ] instead of { }
       const doc = new Docxtemplater(zip, {
         paragraphLoop: true,
         linebreaks: true,
+        delimiters: { start: '[', end: ']' }
       })
 
       doc.render(docData)
@@ -58,7 +67,7 @@ export default function DocumentGenerator({
         mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       })
 
-      saveAs(out, `${tpl.name}_${docData.fullName.replace(/\s+/g, '_')}.docx`)
+      saveAs(out, `${tpl.name}_${docData["Nama Lengkap Karyawan"].replace(/\s+/g, '_')}.docx`)
     } catch (err: any) {
       console.error(err)
       setError(err.message || "Failed to generate document")
@@ -113,13 +122,18 @@ export default function DocumentGenerator({
         </div>
 
         <div className="bg-base-200 p-4 rounded-lg mb-6 text-sm">
-          <p className="font-bold mb-2">Variables available in template (using {"{variableName}"}):</p>
-          <div className="flex flex-wrap gap-4 opacity-80">
-            <code>{"{fullName}"}</code>
-            <code>{"{jobTitle}"}</code>
-            <code>{"{salary}"}</code>
-            <code>{"{startDate}"}</code>
-            <code>{"{currentDate}"}</code>
+          <p className="font-bold mb-2">Variables expected in your Word template:</p>
+          <div className="flex flex-wrap gap-3 opacity-80">
+            <code>[Nama Lengkap Karyawan]</code>
+            <code>[Tempat/Tgl Lahir Karyawan]</code>
+            <code>[Jenis Kelamin Karyawan]</code>
+            <code>[Alamat Karyawan]</code>
+            <code>[No KTP Karyawan]</code>
+            <code>[Jabatan Karyawan]</code>
+            <code>[Tanggal Mulai Kontrak]</code>
+            <code>[Tanggal Selesai Kontrak]</code>
+            <code>[Gaji Karyawan]</code>
+            <code>[Tanggal kontrak]</code>
           </div>
         </div>
 
@@ -144,21 +158,26 @@ export default function DocumentGenerator({
 
         {/* Review Modal */}
         <dialog id="review_modal" className="modal">
-          <div className="modal-box">
+          <div className="modal-box w-11/12 max-w-2xl">
             <h3 className="font-bold text-lg mb-4">Review Injected Data</h3>
             <p className="text-sm opacity-70 mb-4">
-              Ini data yang bakal direplace ke dalem dokumen Word. Pastiin angkanya udah bener sebelum di-download.
+              Ini data yang bakal direplace ke dalem dokumen Word lu. Pastiin formatnya udah bener.
             </p>
             
             {docData && (
               <div className="overflow-x-auto">
                 <table className="table table-sm">
                   <tbody>
-                    <tr><td className="font-mono text-xs w-1/3">{"{fullName}"}</td><td className="font-semibold">{docData.fullName}</td></tr>
-                    <tr><td className="font-mono text-xs">{"{jobTitle}"}</td><td className="font-semibold">{docData.jobTitle}</td></tr>
-                    <tr><td className="font-mono text-xs">{"{salary}"}</td><td className="font-semibold">Rp {docData.salary}</td></tr>
-                    <tr><td className="font-mono text-xs">{"{startDate}"}</td><td className="font-semibold">{docData.startDate}</td></tr>
-                    <tr><td className="font-mono text-xs">{"{currentDate}"}</td><td className="font-semibold">{docData.currentDate}</td></tr>
+                    <tr><td className="font-mono text-xs w-1/2">[Nama Lengkap Karyawan]</td><td className="font-semibold">{docData["Nama Lengkap Karyawan"]}</td></tr>
+                    <tr><td className="font-mono text-xs">[Tempat/Tgl Lahir Karyawan]</td><td className="font-semibold">{docData["Tempat/Tgl Lahir Karyawan"]}</td></tr>
+                    <tr><td className="font-mono text-xs">[Jenis Kelamin Karyawan]</td><td className="font-semibold">{docData["Jenis Kelamin Karyawan"]}</td></tr>
+                    <tr><td className="font-mono text-xs">[Alamat Karyawan]</td><td className="font-semibold">{docData["Alamat Karyawan"]}</td></tr>
+                    <tr><td className="font-mono text-xs">[No KTP Karyawan]</td><td className="font-semibold">{docData["No KTP Karyawan"]}</td></tr>
+                    <tr><td className="font-mono text-xs">[Jabatan Karyawan]</td><td className="font-semibold">{docData["Jabatan Karyawan"]}</td></tr>
+                    <tr><td className="font-mono text-xs">[Tanggal Mulai Kontrak]</td><td className="font-semibold">{docData["Tanggal Mulai Kontrak"]}</td></tr>
+                    <tr><td className="font-mono text-xs">[Tanggal Selesai Kontrak]</td><td className="font-semibold">{docData["Tanggal Selesai Kontrak"]}</td></tr>
+                    <tr><td className="font-mono text-xs">[Gaji Karyawan]</td><td className="font-semibold">Rp {docData["Gaji Karyawan"]}</td></tr>
+                    <tr><td className="font-mono text-xs">[Tanggal kontrak]</td><td className="font-semibold">{docData["Tanggal kontrak"]}</td></tr>
                   </tbody>
                 </table>
               </div>
