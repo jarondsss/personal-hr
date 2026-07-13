@@ -5,7 +5,11 @@ export const ADMIN_ROLE = "ADMIN_HR";
 
 const DEFAULT_DEV_SECRET = "super-secret-key-for-dev-only-change-in-prod";
 
-function getSessionSecret() {
+let _encodedKey: ReturnType<typeof TextEncoder.prototype.encode> | null = null;
+
+function getEncodedKey() {
+  if (_encodedKey) return _encodedKey;
+
   const secret = process.env.SESSION_SECRET;
 
   if (process.env.NODE_ENV === "production") {
@@ -14,11 +18,9 @@ function getSessionSecret() {
     }
   }
 
-  return secret || DEFAULT_DEV_SECRET;
+  _encodedKey = new TextEncoder().encode(secret || DEFAULT_DEV_SECRET);
+  return _encodedKey;
 }
-
-const secretKey = getSessionSecret();
-const encodedKey = new TextEncoder().encode(secretKey);
 
 export type SessionPayload = {
   userId: string;
@@ -31,12 +33,12 @@ export async function encrypt(payload: SessionPayload) {
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
-    .sign(encodedKey);
+    .sign(getEncodedKey());
 }
 
 export async function decrypt(session: string | undefined = "") {
   try {
-    const { payload } = await jwtVerify(session, encodedKey, {
+    const { payload } = await jwtVerify(session, getEncodedKey(), {
       algorithms: ["HS256"],
     });
     return payload as SessionPayload;
