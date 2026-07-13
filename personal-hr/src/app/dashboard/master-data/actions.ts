@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { writeFile, unlink } from "fs/promises"
 import path from "path"
+import bcrypt from "bcryptjs"
 
 import prisma from "@/lib/prisma"
 import { getRequiredAdminSession } from "@/lib/session"
@@ -178,3 +179,132 @@ export async function removeCompanyLogo() {
     return { error: "Failed to remove logo" }
   }
 }
+
+export async function getUsers() {
+  await getRequiredAdminSession()
+  const users = await prisma.user.findMany({
+    include: {
+      employee: {
+        select: {
+          fullName: true
+        }
+      }
+    },
+    orderBy: {
+      email: "asc"
+    }
+  })
+
+  const employeesWithoutUser = await prisma.employee.findMany({
+    where: {
+      userId: null
+    },
+    select: {
+      id: true,
+      fullName: true,
+      email: true
+    },
+    orderBy: {
+      fullName: "asc"
+    }
+  })
+
+  return { users, employeesWithoutUser }
+}
+
+export async function createUser(formData: FormData) {
+  const session = await getRequiredAdminSession()
+
+  const email = formData.get("email")?.toString()
+  const password = formData.get("password")?.toString()
+  const role = formData.get("role")?.toString()
+  const employeeId = formData.get("employeeId")?.toString()
+
+  if (!email || !password || !role) {
+    return { error: "Email, password and role are required" }
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10)
+
+  try {
+    const data: any = {
+      email,
+      password: hashedPassword,
+      role
+    }
+
+    if (employeeId && employeeId !== "none") {
+      data.employee = {
+        connect: {
+          id: employeeId
+        }
+      }
+    }
+
+    await prisma.user.create({
+      data
+    })
+
+    revalidatePath("/dashboard/master-data")
+    return { success: true }
+  } catch (error: any) {
+    console.error("Failed to create user:", error)
+    if (error.code === "P2002") {
+      return { error: "A user with this email already exists" }
+    }
+    return { error: "Failed to create user" }
+  }
+}
+
+export async function updateUser(userId: string, formData: FormData) {
+  await getRequiredAdminSession()
+
+  const password = formData.get("password")?.toString()
+  const role = formData.get("role")?.toString()
+
+  if (!role) {
+    return { error: "Role is required" }
+  }
+
+  try {
+    const data: any = {
+      role
+    }
+
+    if (password && password.trim() !== "") {
+      data.password = await bcrypt.hash(password, 10)
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data
+    })
+
+    revalidatePath("/dashboard/master-data")
+    return { success: true }
+  } catch (error) {
+    console.error("Failed to update user:", error)
+    return { error: "Failed to update user" }
+  }
+}
+
+export async function deleteUser(userId: string) {
+  const session = await getRequiredAdminSession()
+
+  if (session.userId === userId) {
+    return { error: "You cannot delete your own account" }
+  }
+
+  try {
+    await prisma.user.delete({
+      where: { id: userId }
+    })
+
+    revalidatePath("/dashboard/master-data")
+    return { success: true }
+  } catch (error) {
+    console.error("Failed to delete user:", error)
+    return { error: "Failed to delete user" }
+  }
+}
+

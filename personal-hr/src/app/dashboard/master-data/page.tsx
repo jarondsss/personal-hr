@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { getMasterData, addMasterData, deleteMasterData, getCompanyProfile, updateCompanyProfile, uploadCompanyLogo, removeCompanyLogo } from "./actions"
+import { getMasterData, addMasterData, deleteMasterData, getCompanyProfile, updateCompanyProfile, uploadCompanyLogo, removeCompanyLogo, getUsers, createUser, updateUser, deleteUser } from "./actions"
 
 const CATEGORIES = [
   { value: "JOB_TITLE", label: "Job Title" },
@@ -12,12 +12,20 @@ const CATEGORIES = [
 ]
 
 const COMPANY_TAB = "COMPANY_SETTINGS"
+const ACCOUNTS_TAB = "USER_ACCOUNTS"
 
 export default function MasterDataPage() {
   const [data, setData] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState("JOB_TITLE")
   const [selectedCategory, setSelectedCategory] = useState("JOB_TITLE")
   const [error, setError] = useState<string | null>(null)
+
+  // User accounts state
+  const [users, setUsers] = useState<any[]>([])
+  const [employeesWithoutUser, setEmployeesWithoutUser] = useState<any[]>([])
+  const [userError, setUserError] = useState<string | null>(null)
+  const [selectedUser, setSelectedUser] = useState<any>(null)
+  const [userToDelete, setUserToDelete] = useState<any>(null)
 
   // Company profile state
   const [companyProfile, setCompanyProfile] = useState<any>(null)
@@ -37,6 +45,13 @@ export default function MasterDataPage() {
     getMasterData().then(setData)
   }
 
+  const refreshUsers = () => {
+    getUsers().then((res) => {
+      setUsers(res.users || [])
+      setEmployeesWithoutUser(res.employeesWithoutUser || [])
+    })
+  }
+
   const refreshCompany = () => {
     getCompanyProfile().then((profile) => {
       setCompanyProfile(profile)
@@ -53,6 +68,7 @@ export default function MasterDataPage() {
   useEffect(() => {
     refreshData()
     refreshCompany()
+    refreshUsers()
   }, [])
 
   const handleCompanySubmit = async (e: React.FormEvent) => {
@@ -91,12 +107,23 @@ export default function MasterDataPage() {
     ? [activeItems.slice(0, 10), activeItems.slice(10, 20)]
     : []
   const isCompanyTab = activeTab === COMPANY_TAB
+  const isAccountsTab = activeTab === ACCOUNTS_TAB
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Master Data</h1>
-        {!isCompanyTab && (
+        {isAccountsTab ? (
+          <label
+            htmlFor="add_user_modal"
+            className="btn btn-primary rounded-full"
+            onClick={() => {
+              setUserError(null)
+            }}
+          >
+            Add New User
+          </label>
+        ) : !isCompanyTab ? (
           <label
             htmlFor="add_modal"
             className="btn btn-primary rounded-full"
@@ -107,11 +134,15 @@ export default function MasterDataPage() {
           >
             Add New Data
           </label>
-        )}
+        ) : null}
       </div>
 
       <div className="halo-tabs relative my-2" role="tablist">
-        {[...CATEGORIES, { value: COMPANY_TAB, label: "Company Settings" }].map((cat) => {
+        {[
+          ...CATEGORIES,
+          { value: COMPANY_TAB, label: "Company Settings" },
+          { value: ACCOUNTS_TAB, label: "User Accounts" }
+        ].map((cat) => {
           const isActive = activeTab === cat.value
           return (
             <button
@@ -123,6 +154,7 @@ export default function MasterDataPage() {
               onClick={() => {
                 setActiveTab(cat.value)
                 if (cat.value === COMPANY_TAB) refreshCompany()
+                if (cat.value === ACCOUNTS_TAB) refreshUsers()
               }}
               role="tab"
               aria-selected={isActive}
@@ -318,6 +350,73 @@ export default function MasterDataPage() {
               </form>
             </div>
           </motion.div>
+        ) : isAccountsTab ? (
+          <motion.div
+            key={ACCOUNTS_TAB}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.15 }}
+            className="card bg-base-100 shadow-xl border border-base-200"
+          >
+            <div className="card-body">
+              <h2 className="card-title text-lg border-b pb-2">User Accounts</h2>
+              <div className="overflow-x-auto">
+                <table className="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Email</th>
+                      <th>Linked Employee</th>
+                      <th>Role</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((u: any) => (
+                      <tr key={u.id}>
+                        <td>{u.email}</td>
+                        <td>{u.employee?.fullName || <span className="opacity-40">-</span>}</td>
+                        <td>
+                          <span className={`chip ${u.role === "ADMIN_HR" ? "bg-red-500/10 text-red-500" : "bg-blue-500/10 text-blue-500"} px-2 py-0.5 rounded text-xs`}>
+                            {u.role}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="flex gap-2">
+                            <label
+                              htmlFor="edit_user_modal"
+                              className="btn btn-ghost btn-xs text-warning cursor-pointer"
+                              onClick={() => {
+                                setSelectedUser(u)
+                                setUserError(null)
+                              }}
+                            >
+                              Edit
+                            </label>
+                            <label
+                              htmlFor="delete_user_modal"
+                              className="btn btn-ghost btn-xs text-error cursor-pointer"
+                              onClick={() => {
+                                setUserToDelete(u)
+                                setUserError(null)
+                              }}
+                            >
+                              Delete
+                            </label>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {users.length === 0 && (
+                <div className="text-center py-10 opacity-50">
+                  No users found.
+                </div>
+              )}
+            </div>
+          </motion.div>
         ) : (
           <motion.div
             key={activeTab}
@@ -492,6 +591,218 @@ export default function MasterDataPage() {
           </form>
         </div>
         <label className="modal-backdrop" htmlFor="add_modal" onClick={() => setError(null)}>Close</label>
+      </div>
+
+      {/* Add User Modal */}
+      <input type="checkbox" id="add_user_modal" className="modal-toggle" />
+      <div className="modal" role="dialog">
+        <div className="modal-box">
+          <h3 className="text-lg font-bold">Add User Account</h3>
+
+          {userError && (
+            <div className="alert alert-error mt-4 p-2 text-sm">
+              <span>{userError}</span>
+            </div>
+          )}
+
+          <form
+            action={async (formData) => {
+              setUserError(null)
+              const res = await createUser(formData)
+
+              if (res?.error) {
+                setUserError(res.error)
+              } else {
+                refreshUsers()
+                const modal = document.getElementById("add_user_modal") as HTMLInputElement
+                if (modal) modal.checked = false
+
+                const form = document.getElementById("add_user_form") as HTMLFormElement
+                if (form) form.reset()
+              }
+            }}
+            id="add_user_form"
+            className="space-y-4 mt-4"
+          >
+            <div className="form-control">
+              <label className="label"><span className="label-text">Email</span></label>
+              <input type="email" name="email" placeholder="e.g. employee@company.com" className="input input-bordered" required />
+            </div>
+
+            <div className="form-control">
+              <label className="label"><span className="label-text">Password</span></label>
+              <input type="password" name="password" className="input input-bordered" required />
+            </div>
+
+            <div className="form-control">
+              <label className="label"><span className="label-text">Role</span></label>
+              <select name="role" className="select select-bordered" defaultValue="EMPLOYEE" required>
+                <option value="EMPLOYEE">EMPLOYEE</option>
+                <option value="ADMIN_HR">ADMIN_HR</option>
+              </select>
+            </div>
+
+            <div className="form-control">
+              <label className="label"><span className="label-text">Link to Employee (Optional)</span></label>
+              <select name="employeeId" className="select select-bordered" defaultValue="none">
+                <option value="none">None (Stand-alone account)</option>
+                {employeesWithoutUser.map((emp) => (
+                  <option key={emp.id} value={emp.id}>
+                    {emp.fullName} ({emp.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="modal-action">
+              <label htmlFor="add_user_modal" className="btn btn-ghost" onClick={() => setUserError(null)}>Cancel</label>
+              <button type="submit" className="btn btn-primary rounded-full">Save</button>
+            </div>
+          </form>
+        </div>
+        <label className="modal-backdrop" htmlFor="add_user_modal" onClick={() => setUserError(null)}>Close</label>
+      </div>
+
+      {/* Edit User Modal */}
+      <input type="checkbox" id="edit_user_modal" className="modal-toggle" />
+      <div className="modal" role="dialog">
+        <div className="modal-box">
+          <h3 className="text-lg font-bold">Edit User Account</h3>
+
+          {userError && (
+            <div className="alert alert-error mt-4 p-2 text-sm">
+              <span>{userError}</span>
+            </div>
+          )}
+
+          {selectedUser && (
+            <form
+              action={async (formData) => {
+                setUserError(null)
+                const res = await updateUser(selectedUser.id, formData)
+
+                if (res?.error) {
+                  setUserError(res.error)
+                } else {
+                  refreshUsers()
+                  const modal = document.getElementById("edit_user_modal") as HTMLInputElement
+                  if (modal) modal.checked = false
+
+                  const form = document.getElementById("edit_user_form") as HTMLFormElement
+                  if (form) form.reset()
+                  setSelectedUser(null)
+                }
+              }}
+              id="edit_user_form"
+              className="space-y-4 mt-4"
+            >
+              <div className="form-control">
+                <label className="label"><span className="label-text">Email (Cannot be changed)</span></label>
+                <input type="email" value={selectedUser.email} className="input input-bordered" disabled />
+              </div>
+
+              <div className="form-control">
+                <label className="label"><span className="label-text">New Password (Leave blank to keep current)</span></label>
+                <input type="password" name="password" className="input input-bordered" placeholder="••••••••" />
+              </div>
+
+              <div className="form-control">
+                <label className="label"><span className="label-text">Role</span></label>
+                <select name="role" className="select select-bordered" defaultValue={selectedUser.role} required>
+                  <option value="EMPLOYEE">EMPLOYEE</option>
+                  <option value="ADMIN_HR">ADMIN_HR</option>
+                </select>
+              </div>
+
+              <div className="modal-action">
+                <label
+                  htmlFor="edit_user_modal"
+                  className="btn btn-ghost"
+                  onClick={() => {
+                    setUserError(null)
+                    setSelectedUser(null)
+                  }}
+                >
+                  Cancel
+                </label>
+                <button type="submit" className="btn btn-primary rounded-full">Save</button>
+              </div>
+            </form>
+          )}
+        </div>
+        <label
+          className="modal-backdrop"
+          htmlFor="edit_user_modal"
+          onClick={() => {
+            setUserError(null)
+            setSelectedUser(null)
+          }}
+        >
+          Close
+        </label>
+      </div>
+
+      {/* Delete User Modal */}
+      <input type="checkbox" id="delete_user_modal" className="modal-toggle" />
+      <div className="modal" role="dialog">
+        <div className="modal-box">
+          <h3 className="text-lg font-bold text-error">Warning: Delete User</h3>
+
+          {userError && (
+            <div className="alert alert-error mt-4 p-2 text-sm">
+              <span>{userError}</span>
+            </div>
+          )}
+
+          {userToDelete && (
+            <div>
+              <p className="py-4">
+                Are you sure you want to delete the user account for <strong>{userToDelete.email}</strong>?
+                <br />
+                <span className="text-sm opacity-70">This action only deletes the login credentials. The linked employee record is not affected.</span>
+              </p>
+              <div className="modal-action">
+                <label
+                  htmlFor="delete_user_modal"
+                  className="btn btn-ghost"
+                  onClick={() => {
+                    setUserError(null)
+                    setUserToDelete(null)
+                  }}
+                >
+                  Cancel
+                </label>
+                <button
+                  className="btn btn-error"
+                  onClick={async () => {
+                    setUserError(null)
+                    const res = await deleteUser(userToDelete.id)
+                    if (res?.error) {
+                      setUserError(res.error)
+                    } else {
+                      refreshUsers()
+                      const modal = document.getElementById("delete_user_modal") as HTMLInputElement
+                      if (modal) modal.checked = false
+                      setUserToDelete(null)
+                    }
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        <label
+          className="modal-backdrop"
+          htmlFor="delete_user_modal"
+          onClick={() => {
+            setUserError(null)
+            setUserToDelete(null)
+          }}
+        >
+          Close
+        </label>
       </div>
     </div>
   )
