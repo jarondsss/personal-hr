@@ -1,10 +1,9 @@
 import prisma from "@/lib/prisma";
-import { getSession } from "@/lib/session";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import AnalyticsTab from "./AnalyticsTab";
 import ReportsTab from "./ReportsTab";
 import DashboardTabs from "./DashboardTabs";
+import PageTransition from "@/components/PageTransition";
 
 interface PageProps {
   searchParams: Promise<{ tab?: string }>;
@@ -12,12 +11,10 @@ interface PageProps {
 
 export default async function DashboardPage(props: PageProps) {
   const searchParams = await props.searchParams;
-  const currentTab = searchParams.tab || "overview";
-  const session = await getSession();
-
-  if (!session) {
-    redirect("/login");
-  }
+  const allowedTabs = new Set(["overview", "analytics", "reports"]);
+  const currentTab = searchParams.tab && allowedTabs.has(searchParams.tab)
+    ? searchParams.tab
+    : "overview";
 
   // Common overview stats logic
   const [
@@ -27,20 +24,34 @@ export default async function DashboardPage(props: PageProps) {
     pendingOvertimes,
   ] = await Promise.all([
     prisma.employee.count(),
-    prisma.project.count({ where: { status: "ACTIVE" } }),
+    prisma.project.count(),
     prisma.leaveRequest.count({ where: { status: "PENDING" } }),
     prisma.overtimeRequest.count({ where: { status: "PENDING" } }),
   ]);
 
-  const now = new Date();
-  const month = now.getMonth() + 1;
-  const year = now.getFullYear();
+  const expiringContracts = await prisma.employee.findMany({
+    where: {
+      endContract: { not: null },
+    },
+    select: {
+      id: true,
+      fullName: true,
+      jobTitle: true,
+      endContract: true,
+    },
+    orderBy: { endContract: "asc" },
+  });
 
-  const currentPayrolls = await prisma.payroll.count({
-    where: { month, year },
+  const soonExpiring = expiringContracts.filter((e) => {
+    if (!e.endContract) return false;
+    const daysLeft =
+      (new Date(e.endContract).getTime() - Date.now()) /
+      (1000 * 60 * 60 * 24);
+    return daysLeft <= 30;
   });
 
   return (
+    <PageTransition>
     <div className="stack-lg">
       {/* Page header */}
       <div className="row-between">
@@ -109,78 +120,98 @@ export default async function DashboardPage(props: PageProps) {
             </div>
           </div>
 
-          {/* Quick actions & payroll status */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Quick actions */}
-            <div className="lg:col-span-2 surface">
-              <div className="stack-sm">
+          {/* Expiring Contracts */}
+          <div className="surface">
+            <div className="stack-sm">
+              <div className="row-between">
                 <span className="t-title-md" style={{ fontSize: "0.9375rem" }}>
-                  Quick Actions
+                  Expiring Contracts
                 </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <QuickActionCard
-                    href="/dashboard/employees/new"
-                    label="Add Employee"
-                    desc="Register a new team member"
-                    svgPaths={<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" /></>}
-                  />
-                  <QuickActionCard
-                    href="/dashboard/payroll"
-                    label={currentPayrolls > 0 ? "View Payroll" : "Run Payroll"}
-                    desc={currentPayrolls > 0 ? `${currentPayrolls} payroll${currentPayrolls > 1 ? 's' : ''} this month` : "Generate this month's payroll"}
-                    svgPaths={<><rect x="1" y="5" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="11" x2="23" y2="11" /><circle cx="16" cy="15" r="1" /></>}
-                  />
-                  <QuickActionCard
-                    href="/dashboard/leave"
-                    label="Manage Leave"
-                    desc={pendingLeaves > 0 ? `${pendingLeaves} pending request${pendingLeaves > 1 ? 's' : ''}` : "View leave requests"}
-                    svgPaths={<><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></>}
-                  />
-                  <QuickActionCard
-                    href="/dashboard/documents"
-                    label="Generate Documents"
-                    desc="Create contracts & letters"
-                    svgPaths={<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></>}
-                  />
-                </div>
+                <span className="chip" data-tone={soonExpiring.some(e => e.endContract && (new Date(e.endContract).getTime() - Date.now()) / (1000*60*60*24) <= 14) ? "danger" : "warning"}>
+                  {soonExpiring.length} contract{soonExpiring.length > 1 ? 's' : ''}
+                </span>
               </div>
+              {soonExpiring.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                  {soonExpiring.map((emp) => {
+                    if (!emp.endContract) return null;
+                    const daysLeft = Math.ceil(
+                      (new Date(emp.endContract).getTime() - Date.now()) /
+                        (1000 * 60 * 60 * 24)
+                    );
+                    const urgent = daysLeft <= 14;
+                    const warning = daysLeft <= 30 && daysLeft > 14;
+                    return (
+                      <div
+                        key={emp.id}
+                        className="quick-action-card"
+                        style={urgent ? { borderColor: "var(--color-error)" } : warning ? { borderColor: "var(--color-warning)" } : undefined}
+                      >
+                        <div className="quick-action-icon" style={{ backgroundColor: urgent ? "var(--color-danger-soft)" : warning ? "var(--color-warning-soft)" : "var(--color-primary-soft)", color: urgent ? "var(--color-error)" : warning ? "var(--color-warning)" : "var(--color-primary-hover)" }}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                          </svg>
+                        </div>
+                        <div className="stack-sm" style={{ gap: 6, flex: 1, minWidth: 0 }}>
+                          <div>
+                            <div className="qa-label" style={{ fontSize: 13 }}>{emp.fullName}</div>
+                            <div className="qa-desc" style={{ fontSize: 11 }}>
+                              {daysLeft > 0 ? `${daysLeft} hari lagi` : "Expired!"}
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <Link href={`/dashboard/documents?employeeId=${emp.id}`} className="btn btn-xs btn-primary rounded-full">
+                              Document
+                            </Link>
+                            <Link href={`/dashboard/employees/${emp.id}/edit`} className="btn btn-xs btn-outline rounded-full">
+                              Edit Duration
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="t-body-sm" style={{ color: "var(--color-text-muted)" }}>
+                  No contracts expiring within 30 days.
+                </p>
+              )}
             </div>
+          </div>
 
-            {/* Payroll summary */}
-            <div className="surface">
-              <div className="stack-sm">
-                <div className="row-between">
-                  <span className="t-title-md" style={{ fontSize: "0.9375rem" }}>
-                    Payroll Status
-                  </span>
-                  <span className="chip" data-tone={currentPayrolls > 0 ? "success" : "warning"}>
-                    {currentPayrolls > 0 ? "Completed" : "Pending"}
-                  </span>
-                </div>
-                <div className="stack-sm" style={{ gap: "var(--space-3)" }}>
-                  <div className="flex items-center justify-between">
-                    <span className="t-label-sm" style={{ textTransform: "none", letterSpacing: 0 }}>Period</span>
-                    <span className="t-mono-sm">{new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(now)}</span>
-                  </div>
-                  <div className="halo-divider" />
-                  <div className="flex items-center justify-between">
-                    <span className="t-label-sm" style={{ textTransform: "none", letterSpacing: 0 }}>Payrolls Generated</span>
-                    <span style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "1.125rem", color: "var(--color-text-primary)" }}>{currentPayrolls}</span>
-                  </div>
-                  <div className="halo-divider" />
-                  <div className="flex items-center justify-between">
-                    <span className="t-label-sm" style={{ textTransform: "none", letterSpacing: 0 }}>Total Employees</span>
-                    <span style={{ fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "1.125rem", color: "var(--color-text-primary)" }}>{employeeCount}</span>
-                  </div>
-                </div>
-                <Link
+          {/* Quick Actions */}
+          <div className="surface">
+            <div className="stack-sm">
+              <span className="t-title-md" style={{ fontSize: "0.9375rem" }}>
+                Quick Actions
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <QuickActionCard
+                  href="/dashboard/employees/new"
+                  label="Add Employee"
+                  desc="Register a new team member"
+                  svgPaths={<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" /></>}
+                />
+                <QuickActionCard
                   href="/dashboard/payroll"
-                  className="btn btn-primary btn-sm"
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%" }}
-                >
-                  Go to Payroll
-                  <IconArrowRight />
-                </Link>
+                  label="Payroll"
+                  desc="View this month"
+                  svgPaths={<><rect x="1" y="5" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="11" x2="23" y2="11" /><circle cx="16" cy="15" r="1" /></>}
+                />
+                <QuickActionCard
+                  href="/dashboard/leave"
+                  label="Manage Leave"
+                  desc={pendingLeaves > 0 ? `${pendingLeaves} pending request${pendingLeaves > 1 ? 's' : ''}` : "View leave requests"}
+                  svgPaths={<><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></>}
+                />
+                <QuickActionCard
+                  href="/dashboard/documents"
+                  label="Generate Documents"
+                  desc="Create contracts & letters"
+                  svgPaths={<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></>}
+                />
               </div>
             </div>
           </div>
@@ -190,6 +221,7 @@ export default async function DashboardPage(props: PageProps) {
       {currentTab === "analytics" && <AnalyticsTab />}
       {currentTab === "reports" && <ReportsTab />}
     </div>
+    </PageTransition>
   );
 }
 

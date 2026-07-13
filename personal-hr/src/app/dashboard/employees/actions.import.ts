@@ -1,16 +1,19 @@
 "use server"
 
 import prisma from "@/lib/prisma"
+import { getRequiredAdminSession } from "@/lib/session"
 import { revalidatePath } from "next/cache"
 
 export async function importEmployeesCSV(data: any[]) {
+  await getRequiredAdminSession()
+
   let successCount = 0;
   let failCount = 0;
 
   for (const row of data) {
     try {
       // Basic validation
-      if (!row.fullName || !row.email) {
+      if (!row.fullName || !row.email || !row.joinDate) {
         failCount++;
         continue;
       }
@@ -44,7 +47,7 @@ export async function importEmployeesCSV(data: any[]) {
           status: row.status?.trim() || 'Active', // Default
           salary: parseFloat(row.salary) || 0,
           salaryType: row.salaryType?.trim() || 'GROSS',
-          joinDate: row.joinDate ? new Date(row.joinDate) : new Date(), // Default to today
+          joinDate: new Date(row.joinDate),
           startContract: row.startContract ? new Date(row.startContract) : null,
           endContract: row.endContract ? new Date(row.endContract) : null,
           discordId: row.discordId?.trim() || null,
@@ -63,6 +66,8 @@ export async function importEmployeesCSV(data: any[]) {
 }
 
 export async function createOnboardingLink(formData: FormData) {
+  await getRequiredAdminSession()
+
   const email = formData.get("email")?.toString()
   const name = formData.get("name")?.toString()
 
@@ -78,12 +83,16 @@ export async function createOnboardingLink(formData: FormData) {
 }
 
 export async function getOnboardingLinks() {
+  await getRequiredAdminSession()
+
   return await prisma.onboardingLink.findMany({
     orderBy: { createdAt: 'desc' }
   })
 }
 
 export async function deleteOnboardingLink(id: string) {
+  await getRequiredAdminSession()
+
   await prisma.onboardingLink.delete({ where: { id } })
   revalidatePath("/dashboard/employees")
 }

@@ -10,11 +10,12 @@ export default function TemplateManager({ templates }: { templates: any[] }) {
   const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsUploading(true)
-    
+    const form = e.currentTarget
+
     try {
-      const formData = new FormData(e.currentTarget)
+      const formData = new FormData(form)
       await uploadTemplate(formData)
-      e.currentTarget.reset()
+      form.reset()
     } catch (err) {
       console.error(err)
       alert("Failed to upload template")
@@ -54,7 +55,7 @@ export default function TemplateManager({ templates }: { templates: any[] }) {
               className="file-input file-input-bordered w-full" 
               required
             />
-            <button type="submit" className="btn btn-primary" disabled={isUploading}>
+            <button type="submit" className="btn btn-primary rounded-full" disabled={isUploading}>
               {isUploading ? <span className="loading loading-spinner"></span> : 'Upload'}
             </button>
           </div>

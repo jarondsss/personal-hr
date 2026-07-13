@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Docxtemplater from "docxtemplater"
 import PizZip from "pizzip"
 import { saveAs } from "file-saver"
@@ -11,20 +11,30 @@ type Template = {
   fileName: string
 }
 
-export default function DocumentGenerator({ 
-  employees, 
-  templates 
-}: { 
-  employees: any[], 
-  templates: Template[] 
+export default function DocumentGenerator({
+  employees,
+  templates,
+  companyProfile,
+  initialEmployeeId = ""
+}: {
+  employees: any[],
+  templates: Template[],
+  companyProfile?: any,
+  initialEmployeeId?: string
 }) {
-  const [selectedEmp, setSelectedEmp] = useState<string>("")
+  const [selectedEmp, setSelectedEmp] = useState<string>(initialEmployeeId)
   const [selectedTemplate, setSelectedTemplate] = useState<string>("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const emp = employees.find(e => e.id === selectedEmp)
   const tpl = templates.find(t => t.id === selectedTemplate)
+  const canGenerate = isMounted && !!(emp && tpl)
 
   // Pre-calculate data for preview and generation
   // Changed keys to match user's template using [Bracket] format in docx
@@ -35,10 +45,20 @@ export default function DocumentGenerator({
     "Alamat Karyawan": emp.address || "-",
     "No KTP Karyawan": emp.idCardNumber || "-",
     "Jabatan Karyawan": emp.jobTitle,
-    "Tanggal Mulai Kontrak": emp.joinDate ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(emp.joinDate)) : "-",
+    "Tanggal Mulai Kontrak": emp.startContract
+      ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(emp.startContract))
+      : emp.joinDate
+        ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(emp.joinDate))
+        : "-",
     "Tanggal Selesai Kontrak": emp.endContract ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(emp.endContract)) : "-",
     "Gaji Karyawan": new Intl.NumberFormat('id-ID').format(emp.salary),
-    "Tanggal kontrak": new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date())
+    "Type Salary": emp.salaryType || "-",
+    "Tanggal kontrak": new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date()),
+    // Company profile variables
+    "Nama Perusahaan": companyProfile?.companyName || "-",
+    "Email Perusahaan": companyProfile?.email || "-",
+    "No HP Perusahaan": companyProfile?.phone || "-",
+    "Alamat Perusahaan": companyProfile?.address || "-"
   } : null
 
   const handleGenerate = async () => {
@@ -133,24 +153,32 @@ export default function DocumentGenerator({
             <code>[Tanggal Mulai Kontrak]</code>
             <code>[Tanggal Selesai Kontrak]</code>
             <code>[Gaji Karyawan]</code>
+            <code>[Type Salary]</code>
             <code>[Tanggal kontrak]</code>
+          </div>
+          <p className="font-bold mt-4 mb-2">Company variables (from Company Settings):</p>
+          <div className="flex flex-wrap gap-3 opacity-80">
+            <code>[Nama Perusahaan]</code>
+            <code>[Email Perusahaan]</code>
+            <code>[No HP Perusahaan]</code>
+            <code>[Alamat Perusahaan]</code>
           </div>
         </div>
 
         <div className="card-actions justify-end gap-2">
           {/* Review Modal Trigger */}
-          <button 
-            className="btn btn-outline" 
-            disabled={!docData || !tpl}
+          <button
+            className="btn btn-outline rounded-full"
+            disabled={!canGenerate}
             onClick={() => (document.getElementById('review_modal') as HTMLDialogElement)?.showModal()}
           >
             Review Data
           </button>
 
           <button
-            className="btn btn-primary"
+            className="btn btn-primary rounded-full"
             onClick={handleGenerate}
-            disabled={!docData || !tpl || isGenerating}
+            disabled={!canGenerate || isGenerating}
           >
             {isGenerating ? <span className="loading loading-spinner"></span> : 'Download Document'}
           </button>
@@ -177,7 +205,13 @@ export default function DocumentGenerator({
                     <tr><td className="font-mono text-xs">[Tanggal Mulai Kontrak]</td><td className="font-semibold">{docData["Tanggal Mulai Kontrak"]}</td></tr>
                     <tr><td className="font-mono text-xs">[Tanggal Selesai Kontrak]</td><td className="font-semibold">{docData["Tanggal Selesai Kontrak"]}</td></tr>
                     <tr><td className="font-mono text-xs">[Gaji Karyawan]</td><td className="font-semibold">Rp {docData["Gaji Karyawan"]}</td></tr>
+                    <tr><td className="font-mono text-xs">[Type Salary]</td><td className="font-semibold">{docData["Type Salary"]}</td></tr>
                     <tr><td className="font-mono text-xs">[Tanggal kontrak]</td><td className="font-semibold">{docData["Tanggal kontrak"]}</td></tr>
+                    <tr className="border-t border-base-300"><td colSpan={2} className="font-bold text-xs py-2">Company Info</td></tr>
+                    <tr><td className="font-mono text-xs">[Nama Perusahaan]</td><td className="font-semibold">{docData["Nama Perusahaan"]}</td></tr>
+                    <tr><td className="font-mono text-xs">[Email Perusahaan]</td><td className="font-semibold">{docData["Email Perusahaan"]}</td></tr>
+                    <tr><td className="font-mono text-xs">[No HP Perusahaan]</td><td className="font-semibold">{docData["No HP Perusahaan"]}</td></tr>
+                    <tr><td className="font-mono text-xs">[Alamat Perusahaan]</td><td className="font-semibold">{docData["Alamat Perusahaan"]}</td></tr>
                   </tbody>
                 </table>
               </div>

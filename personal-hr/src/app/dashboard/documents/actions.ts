@@ -6,14 +6,19 @@ import { writeFile, unlink, readFile } from "fs/promises"
 import path from "path"
 import PizZip from "pizzip"
 import Docxtemplater from "docxtemplater"
+import { getRequiredAdminSession } from "@/lib/session"
 
 export async function getDocumentTemplates() {
+  await getRequiredAdminSession()
+
   return await prisma.documentTemplate.findMany({
     orderBy: { createdAt: 'desc' }
   })
 }
 
 export async function uploadTemplate(formData: FormData) {
+  await getRequiredAdminSession()
+
   const name = formData.get("name")?.toString()
   const file = formData.get("file") as File
 
@@ -35,6 +40,8 @@ export async function uploadTemplate(formData: FormData) {
 }
 
 export async function deleteTemplate(id: string, fileName: string) {
+  await getRequiredAdminSession()
+
   // Prevent deleting our default seeded templates for safety during testing
   if (['contract-template.docx', 'intern-template.docx', 'keterangan-template.docx'].includes(fileName)) {
     throw new Error("Cannot delete default system templates")
@@ -55,6 +62,8 @@ export async function deleteTemplate(id: string, fileName: string) {
 }
 
 export async function generateEmployeeContract(employeeId: string) {
+  await getRequiredAdminSession()
+
   try {
     const employee = await prisma.employee.findUnique({
       where: { id: employeeId }
@@ -77,6 +86,9 @@ export async function generateEmployeeContract(employeeId: string) {
       delimiters: { start: '[', end: ']' }
     })
 
+    // Fetch company profile for contract header
+    const companyProfile = await prisma.companyProfile.findFirst()
+
     const docData = {
       "Nama Lengkap Karyawan": employee.fullName,
       "Tempat/Tgl Lahir Karyawan": (employee.birthPlace && employee.birthDate) 
@@ -86,14 +98,22 @@ export async function generateEmployeeContract(employeeId: string) {
       "Alamat Karyawan": employee.address || "-",
       "No KTP Karyawan": employee.idCardNumber || "-",
       "Jabatan Karyawan": employee.jobTitle,
-      "Tanggal Mulai Kontrak": employee.joinDate 
-        ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(employee.joinDate)) 
-        : "-",
+      "Tanggal Mulai Kontrak": employee.startContract
+        ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(employee.startContract))
+        : employee.joinDate
+          ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(employee.joinDate))
+          : "-",
       "Tanggal Selesai Kontrak": employee.endContract 
         ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(employee.endContract)) 
         : "-",
       "Gaji Karyawan": new Intl.NumberFormat('id-ID').format(employee.salary),
-      "Tanggal kontrak": new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date())
+      "Type Salary": employee.salaryType || "-",
+      "Tanggal kontrak": new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date()),
+      // Company profile variables
+      "Nama Perusahaan": companyProfile?.companyName || "-",
+      "Email Perusahaan": companyProfile?.email || "-",
+      "No HP Perusahaan": companyProfile?.phone || "-",
+      "Alamat Perusahaan": companyProfile?.address || "-"
     }
 
     doc.render(docData)
@@ -115,6 +135,8 @@ export async function generateEmployeeContract(employeeId: string) {
 
 // Ensure defaults exist
 export async function seedDefaultTemplates() {
+  await getRequiredAdminSession()
+
   const defaults = [
     { name: 'PKWT / Kontrak Kerja', fileName: 'contract-template.docx' },
     { name: 'Internship Agreement', fileName: 'intern-template.docx' },
@@ -131,14 +153,24 @@ export async function seedDefaultTemplates() {
 }
 
 export async function getEmployeesForDocument() {
+  await getRequiredAdminSession()
+
   return await prisma.employee.findMany({
     orderBy: { fullName: 'asc' },
     select: {
       id: true,
       fullName: true,
+      birthPlace: true,
+      birthDate: true,
+      gender: true,
+      address: true,
+      idCardNumber: true,
       jobTitle: true,
       salary: true,
+      salaryType: true,
       joinDate: true,
+      startContract: true,
+      endContract: true,
       status: true
     }
   })
