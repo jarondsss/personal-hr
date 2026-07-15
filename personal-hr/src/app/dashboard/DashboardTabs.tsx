@@ -15,17 +15,19 @@ export default function DashboardTabs({ currentTab }: DashboardTabsProps) {
   ]
 
   return (
-    <div className="halo-tabs relative" role="tablist" style={{ flexShrink: 0 }}>
+    <div className="halo-tabs relative my-2" role="tablist" style={{ flexShrink: 0 }}>
       {tabs.map((tab) => {
         const isActive = currentTab === tab.id
         return (
           <Link
             key={tab.id}
             href={`/dashboard?tab=${tab.id}`}
-            className={`halo-tab relative z-10 no-underline transition-colors duration-150 ${isActive ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)]"}`}
+            className={`halo-tab no-underline relative z-10 transition-colors duration-150 ${
+              isActive ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)]"
+            }`}
+            style={{ border: "none" }}
             role="tab"
             aria-selected={isActive}
-            style={{ border: "none" }}
           >
             {tab.label}
             {isActive && (

@@ -41,7 +41,7 @@ export default async function DashboardLayout({
         className="flex lg:hidden items-center justify-between px-4"
         style={{
           height: 56,
-          borderBottom: "1px solid var(--color-border)",
+          borderBottom: "2px solid var(--color-border-strong)",
           backgroundColor: "var(--color-surface)",
         }}
       >
@@ -92,7 +92,7 @@ export default async function DashboardLayout({
           className="fixed lg:sticky top-0 z-40 lg:z-0 h-screen w-[240px] -translate-x-full peer-checked:translate-x-0 lg:translate-x-0 transition-transform duration-200 flex flex-col"
           style={{
             backgroundColor: "var(--color-background)",
-            borderRight: "1px solid var(--color-border)",
+            borderRight: "2px solid var(--color-border-strong)",
           }}
         >
           {/* Brand */}
@@ -100,7 +100,7 @@ export default async function DashboardLayout({
             className="flex items-center gap-3 px-5"
             style={{
               height: 64,
-              borderBottom: "1px solid var(--color-border)",
+              borderBottom: "2px solid var(--color-border-strong)",
             }}
           >
             <span
@@ -127,26 +127,28 @@ export default async function DashboardLayout({
 
           {/* User footer */}
           <div
-            className="mx-3 mb-4 p-3 rounded-xl flex items-center gap-3"
+            className="mx-3 mb-4 p-3 flex items-center gap-3"
             style={{
               backgroundColor: "var(--color-elevated)",
-              border: "1px solid var(--color-border-strong)",
+              border: "2px solid var(--color-border-strong)",
+              borderRadius: "var(--radius-sm)",
             }}
           >
             <div
-              className="flex-shrink-0 flex items-center justify-center t-primary"
+              className="flex-shrink-0 flex items-center justify-center"
               style={{
-                width: 36, height: 36, borderRadius: "50%",
+                width: 36, height: 36, borderRadius: "var(--radius-sm)",
                 background: "conic-gradient(from 200deg, var(--color-primary), var(--color-info), var(--color-primary))",
-                border: "1px solid var(--color-border-strong)",
+                border: "1.5px solid var(--color-border-strong)",
                 fontSize: 14, fontWeight: 600,
+                color: "var(--color-text-primary)",
               }}
             >
               {userInitial}
             </div>
             <div className="flex-1 min-w-0">
-              <div style={{ fontFamily: "var(--font-display)", fontSize: 13, color: "var(--color-text-primary)", fontWeight: 500 }}>{displayName}</div>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--color-text-muted)" }}>{displayEmail}</div>
+              <div className="t-mono-sm" style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>{displayName}</div>
+              <div className="t-mono-sm t-muted" style={{ fontSize: 11 }}>{displayEmail}</div>
             </div>
             <form action={logout}>
               <button type="submit" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-muted)", padding: 4, display: "flex" }}>
