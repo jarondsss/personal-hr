@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@qoder-ai/qoder-agent-sdk": "^1.0.5"
+    "@qoder-ai/qoder-agent-sdk": "^1.0.5",
+    "framer-motion": "^12.42.2"
   }
 }
