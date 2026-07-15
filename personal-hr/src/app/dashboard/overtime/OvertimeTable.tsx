@@ -39,8 +39,8 @@ export default function OvertimeTable({ initialRequests }: { initialRequests: an
 
   return (
     <>
-      <div className="card bg-base-100 shadow-xl border border-base-200">
-        <div className="card-body p-0">
+      <div className="surface surface-flush">
+        <div className="p-0">
           <div className="overflow-x-auto">
             <table className="table table-zebra w-full">
               <thead className="bg-base-200 text-base-content">

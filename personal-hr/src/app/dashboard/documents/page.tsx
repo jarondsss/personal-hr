@@ -18,7 +18,7 @@ export default async function DocumentsPage({ searchParams }: { searchParams: Pr
 
   return (
     <PageTransition>
-    <div className="space-y-6">
+    <div className="stack-lg">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold">Documents</h1>

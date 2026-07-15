@@ -56,10 +56,10 @@ export default async function DashboardPage(props: PageProps) {
       {/* Page header */}
       <div className="row-between">
         <div className="stack-sm">
-          <h1 className="t-headline-lg" style={{ fontSize: "1.75rem" }}>
+          <h1 className="t-headline-lg">
             Welcome back, Admin
           </h1>
-          <p className="t-body-sm" style={{ marginTop: 2 }}>
+          <p className="t-body-sm">
             Here&apos;s what&apos;s happening across your organization today.
           </p>
         </div>
@@ -124,7 +124,7 @@ export default async function DashboardPage(props: PageProps) {
           <div className="surface">
             <div className="stack-sm">
               <div className="row-between">
-                <span className="t-title-md" style={{ fontSize: "0.9375rem" }}>
+                <span className="t-title-md">
                   Expiring Contracts
                 </span>
                 <span className="chip" data-tone={soonExpiring.some(e => e.endContract && (new Date(e.endContract).getTime() - Date.now()) / (1000*60*60*24) <= 14) ? "danger" : "warning"}>
@@ -145,15 +145,15 @@ export default async function DashboardPage(props: PageProps) {
                       <div
                         key={emp.id}
                         className="quick-action-card"
-                        style={urgent ? { borderColor: "var(--color-error)" } : warning ? { borderColor: "var(--color-warning)" } : undefined}
+                        data-tone={urgent ? "danger" : warning ? "warning" : undefined}
                       >
-                        <div className="quick-action-icon" style={{ backgroundColor: urgent ? "var(--color-danger-soft)" : warning ? "var(--color-warning-soft)" : "var(--color-primary-soft)", color: urgent ? "var(--color-error)" : warning ? "var(--color-warning)" : "var(--color-primary-hover)" }}>
+                        <div className="quick-action-icon">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                             <circle cx="9" cy="7" r="4" />
                           </svg>
                         </div>
-                        <div className="stack-sm" style={{ gap: 6, flex: 1, minWidth: 0 }}>
+                        <div className="stack-xs" style={{ flex: 1, minWidth: 0 }}>
                           <div>
                             <div className="qa-label" style={{ fontSize: 13 }}>{emp.fullName}</div>
                             <div className="qa-desc" style={{ fontSize: 11 }}>
@@ -174,7 +174,7 @@ export default async function DashboardPage(props: PageProps) {
                   })}
                 </div>
               ) : (
-                <p className="t-body-sm" style={{ color: "var(--color-text-muted)" }}>
+                <p className="t-body-sm t-muted">
                   No contracts expiring within 30 days.
                 </p>
               )}
@@ -184,7 +184,7 @@ export default async function DashboardPage(props: PageProps) {
           {/* Quick Actions */}
           <div className="surface">
             <div className="stack-sm">
-              <span className="t-title-md" style={{ fontSize: "0.9375rem" }}>
+              <span className="t-title-md">
                 Quick Actions
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -243,7 +243,7 @@ function QuickActionCard({
           {svgPaths}
         </svg>
       </div>
-      <div className="stack-sm" style={{ gap: 4 }}>
+      <div className="stack-xs">
         <div className="qa-label">{label}</div>
         <div className="qa-desc">{desc}</div>
       </div>

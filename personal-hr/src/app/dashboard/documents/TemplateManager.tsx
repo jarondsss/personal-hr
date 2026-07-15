@@ -34,9 +34,9 @@ export default function TemplateManager({ templates }: { templates: any[] }) {
   }
 
   return (
-    <div className="card bg-base-100 shadow-xl border border-base-200">
-      <div className="card-body">
-        <h2 className="card-title text-xl mb-4">Manage Templates</h2>
+    <div className="surface">
+      <div className="p-6">
+        <h2 className="t-title-md text-xl mb-4">Manage Templates</h2>
         
         <form onSubmit={handleUpload} className="mb-6 bg-base-200 p-4 rounded-lg flex flex-col gap-4">
           <h3 className="font-medium text-sm">Upload New Template</h3>

@@ -16,7 +16,7 @@ export default async function OvertimePage() {
 
   return (
     <PageTransition>
-    <div className="flex flex-col gap-6">
+    <div className="stack-lg">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Overtime Requests</h1>
