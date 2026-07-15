@@ -1,10 +1,10 @@
-import * as xlsx from 'xlsx';
 
 export const generatePayslipOds = async (payroll: any, companyProfile?: any) => {
+  const xlsx = await import('xlsx')
   // Read the template via API route to get it as array buffer on client
   const response = await fetch('/api/template/salary-slip');
   const arrayBuffer = await response.arrayBuffer();
-  
+
   // Parse workbook
   const workbook = xlsx.read(new Uint8Array(arrayBuffer), { type: 'array' });
   const sheet = workbook.Sheets['Salary Slip'];

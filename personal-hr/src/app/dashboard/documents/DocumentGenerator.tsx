@@ -1,8 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Docxtemplater from "docxtemplater"
-import PizZip from "pizzip"
 import { saveAs } from "file-saver"
 
 type Template = {
@@ -67,12 +65,16 @@ export default function DocumentGenerator({
     setError(null)
 
     try {
+      const [{ default: Docxtemplater }, { default: PizZip }] = await Promise.all([
+        import("docxtemplater"),
+        import("pizzip"),
+      ])
       const response = await fetch(`/templates/${tpl.fileName}`)
       if (!response.ok) throw new Error("Template file not found on server")
 
       const arrayBuffer = await response.arrayBuffer()
       const zip = new PizZip(arrayBuffer)
-      
+
       // Configure docxtemplater to use [ ] instead of { }
       const doc = new Docxtemplater(zip, {
         paragraphLoop: true,

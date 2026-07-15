@@ -4,7 +4,6 @@ import { useState, useRef } from "react"
 import { generatePayroll, markAsPaid } from "./actions"
 import { generatePayslipOds } from "./PayslipDocument"
 import { saveAs } from "file-saver"
-import * as xlsx from "xlsx"
 import { Check, Printer } from "lucide-react"
 
 export default function PayrollTable({ payrolls, companyProfile }: { payrolls: any[]; companyProfile?: any }) {
@@ -130,7 +129,8 @@ export default function PayrollTable({ payrolls, companyProfile }: { payrolls: a
   const filteredPayrolls = payrolls.filter(p => p.month === filterMonth && p.year === filterYear)
   const payrollColumns = [filteredPayrolls.slice(0, 10), filteredPayrolls.slice(10, 20)]
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
+    const xlsx = await import("xlsx")
     const rows = filteredPayrolls.map((payroll) => ({
       Employee: payroll.employee?.fullName || "-",
       Position: payroll.employee?.jobTitle || "-",
