@@ -19,10 +19,10 @@ model User {
 }
 
 model Employee {
-  id             String          @id @default(cuid())
-  userId         String?         @unique
+  id             String            @id @default(cuid())
+  userId         String?           @unique
   fullName       String
-  email          String          @unique
+  email          String            @unique
   phone          String?
   phone2         String?
   discordId      String?
@@ -39,18 +39,18 @@ model Employee {
   gender         String?
   idCardNumber   String?
   npwp           String?
-  bankName       String?  @default("BCA")
+  bankName       String?           @default("BCA")
   bankAccount    String?
   taxStatus      String?
   address        String?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  user           User?           @relation(fields: [userId], references: [id])
-  projectMembers ProjectMember[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  user           User?             @relation(fields: [userId], references: [id])
   leaveQuotas    LeaveQuota[]
   leaveRequests  LeaveRequest[]
   overtimes      OvertimeRequest[]
   payrolls       Payroll[]
+  projectMembers ProjectMember[]
 }
 
 model Project {
@@ -70,8 +70,8 @@ model ProjectMember {
   joinDate   DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([employeeId, projectId])
 }
@@ -95,8 +95,8 @@ model LeaveQuota {
   year       Int
   quota      Int
   used       Int      @default(0)
-
   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
   @@unique([employeeId, leaveType, year])
 }
 
@@ -107,11 +107,9 @@ model LeaveRequest {
   startDate  DateTime
   endDate    DateTime
   reason     String?
-  status     String   @default("PENDING") // PENDING, APPROVED, REJECTED
-  
+  status     String   @default("PENDING")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-
   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 }
 
@@ -119,15 +117,13 @@ model OvertimeRequest {
   id            String   @id @default(cuid())
   employeeId    String
   date          DateTime
-  startTime     String   // Format: "HH:mm"
-  endTime       String   // Format: "HH:mm"
-  durationHours Float    // Calculated duration in hours
+  startTime     String
+  endTime       String
+  durationHours Float
   reason        String?
-  status        String   @default("PENDING") // PENDING, APPROVED, REJECTED
-  
+  status        String   @default("PENDING")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-
   employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 }
 
@@ -140,11 +136,9 @@ model Payroll {
   overtimePay Float
   deductions  Float    @default(0)
   netSalary   Float
-  status      String   @default("DRAFT") // DRAFT, PAID
-
+  status      String   @default("DRAFT")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
   employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@unique([employeeId, month, year])
@@ -159,14 +153,14 @@ model DocumentTemplate {
 }
 
 model CompanyProfile {
-  id           String   @id @default(cuid())
-  companyName  String
-  email        String
-  phone        String
-  address      String?
-  logoUrl      String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id          String   @id @default(cuid())
+  companyName String
+  email       String
+  phone       String
+  address     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  logoUrl     String?
 }
 
 model OnboardingLink {
