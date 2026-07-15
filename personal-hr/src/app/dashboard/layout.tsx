@@ -20,15 +20,20 @@ export default async function DashboardLayout({
   }
 
   // Look up user info for the sidebar
-  const user = session.userId
-    ? await prisma.user.findUnique({
-        where: { id: session.userId },
-        select: {
-          email: true,
-          employee: { select: { fullName: true } },
-        },
-      })
-    : null;
+  let user: { email: string | null; employee: { fullName: string } | null } | null = null;
+  try {
+    user = session.userId
+      ? await prisma.user.findUnique({
+          where: { id: session.userId },
+          select: {
+            email: true,
+            employee: { select: { fullName: true } },
+          },
+        })
+      : null;
+  } catch (err) {
+    console.error("Failed to load dashboard user:", err);
+  }
 
   const displayName = user?.employee?.fullName || user?.email?.split("@")[0] || "Admin";
   const displayEmail = user?.email || "";

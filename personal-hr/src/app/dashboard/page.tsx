@@ -17,30 +17,47 @@ export default async function DashboardPage(props: PageProps) {
     : "overview";
 
   // Common overview stats logic
-  const [
-    employeeCount,
-    activeProjects,
-    pendingLeaves,
-    pendingOvertimes,
-  ] = await Promise.all([
-    prisma.employee.count(),
-    prisma.project.count(),
-    prisma.leaveRequest.count({ where: { status: "PENDING" } }),
-    prisma.overtimeRequest.count({ where: { status: "PENDING" } }),
-  ]);
+  let employeeCount = 0;
+  let activeProjects = 0;
+  let pendingLeaves = 0;
+  let pendingOvertimes = 0;
+  let expiringContracts: {
+    id: string;
+    fullName: string;
+    jobTitle: string;
+    endContract: Date | null;
+  }[] = [];
 
-  const expiringContracts = await prisma.employee.findMany({
-    where: {
-      endContract: { not: null },
-    },
-    select: {
-      id: true,
-      fullName: true,
-      jobTitle: true,
-      endContract: true,
-    },
-    orderBy: { endContract: "asc" },
-  });
+  try {
+    [
+      employeeCount,
+      activeProjects,
+      pendingLeaves,
+      pendingOvertimes,
+    ] = await Promise.all([
+      prisma.employee.count(),
+      prisma.project.count(),
+      prisma.leaveRequest.count({ where: { status: "PENDING" } }),
+      prisma.overtimeRequest.count({ where: { status: "PENDING" } }),
+    ]);
+
+    expiringContracts = await prisma.employee.findMany({
+      where: {
+        endContract: { not: null },
+      },
+      select: {
+        id: true,
+        fullName: true,
+        jobTitle: true,
+        endContract: true,
+      },
+      orderBy: { endContract: "asc" },
+    });
+  } catch (err) {
+    console.error("Failed to load dashboard data:", err);
+  }
+
+  const dbError = !expiringContracts.length && employeeCount === 0 && pendingLeaves === 0 && pendingOvertimes === 0;
 
   const soonExpiring = expiringContracts.filter((e) => {
     if (!e.endContract) return false;
@@ -62,6 +79,11 @@ export default async function DashboardPage(props: PageProps) {
           <p className="t-body-sm">
             Here&apos;s what&apos;s happening across your organization today.
           </p>
+          {dbError && (
+            <span className="chip" data-tone="danger">
+              Database tidak terhubung
+            </span>
+          )}
         </div>
         <DashboardTabs currentTab={currentTab} />
       </div>
