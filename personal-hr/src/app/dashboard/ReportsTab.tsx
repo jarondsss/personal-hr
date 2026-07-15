@@ -35,7 +35,7 @@ export default async function ReportsTab() {
     <div className="surface stack-md">
       <div className="row-between">
         <div className="stack-sm">
-          <h2 className="t-title-md" style={{ fontSize: "0.9375rem" }}>
+          <h2 className="t-title-md">
             Monthly Payroll Reports
           </h2>
           <p className="t-body-sm">

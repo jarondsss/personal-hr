@@ -38,7 +38,7 @@ export default function ProjectsPage() {
 
   return (
     <PageTransition>
-    <div className="space-y-6">
+    <div className="stack-lg">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Projects</h1>
         <label htmlFor="add_project_modal" className="btn btn-primary rounded-full">

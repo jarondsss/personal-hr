@@ -51,9 +51,9 @@ export default async function ManageProjectPage({ params }: { params: Promise<{ 
         
         {/* Left Col: Add Member Form */}
         <div className="lg:col-span-1">
-          <div className="card bg-base-100 shadow-xl border border-base-200">
-            <div className="card-body p-6">
-              <h2 className="card-title text-lg border-b pb-2 mb-2">Assign Member</h2>
+          <div className="surface">
+            <div className="p-6">
+              <h2 className="t-title-md text-lg border-b pb-2 mb-2">Assign Member</h2>
               
               <form action={addMemberAction} className="space-y-4">
                 <div className="form-control">
@@ -85,10 +85,10 @@ export default async function ManageProjectPage({ params }: { params: Promise<{ 
 
         {/* Right Col: Member List */}
         <div className="lg:col-span-2">
-          <div className="card bg-base-100 shadow-xl border border-base-200">
-            <div className="card-body p-0">
+          <div className="surface surface-flush">
+            <div className="p-0">
               <div className="p-6 border-b border-base-200 flex justify-between items-center">
-                <h2 className="card-title text-lg">Team Members ({project.members.length})</h2>
+                <h2 className="t-title-md text-lg">Team Members ({project.members.length})</h2>
               </div>
               
               <div className="overflow-x-auto">

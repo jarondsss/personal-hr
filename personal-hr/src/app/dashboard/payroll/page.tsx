@@ -32,7 +32,7 @@ export default async function PayrollPage() {
 
   return (
     <PageTransition>
-    <div className="space-y-6">
+    <div className="stack-lg">
       <div>
         <h1 className="text-2xl font-bold">Payroll Management</h1>
         <p className="text-base-content/70">Generate and manage employee salaries</p>

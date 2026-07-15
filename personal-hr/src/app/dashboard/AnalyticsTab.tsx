@@ -57,11 +57,11 @@ export default async function AnalyticsTab() {
   return (
     <div className="stack-lg">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="stat-tile" data-tone="success">
+        <div className="stat-tile stat-sm" data-tone="success">
           <div className="stat-head">
             <span className="stat-eyebrow">Average Basic Salary</span>
           </div>
-          <div className="stat-value" style={{ fontSize: "1.75rem" }}>
+          <div className="stat-value">
             {formatCurrency(avgSalary)}
           </div>
           <div className="stat-meta">
@@ -69,11 +69,11 @@ export default async function AnalyticsTab() {
           </div>
         </div>
 
-        <div className="stat-tile" data-tone="info">
+        <div className="stat-tile stat-sm" data-tone="info">
           <div className="stat-head">
             <span className="stat-eyebrow">Max Basic Salary</span>
           </div>
-          <div className="stat-value" style={{ fontSize: "1.75rem" }}>
+          <div className="stat-value">
             {formatCurrency(maxSalary)}
           </div>
           <div className="stat-meta">
@@ -81,11 +81,11 @@ export default async function AnalyticsTab() {
           </div>
         </div>
 
-        <div className="stat-tile" data-tone="warning">
+        <div className="stat-tile stat-sm" data-tone="warning">
           <div className="stat-head">
             <span className="stat-eyebrow">Project Allocation Rate</span>
           </div>
-          <div className="stat-value" style={{ fontSize: "1.75rem" }}>
+          <div className="stat-value">
             {totalAllocations} member(s)
           </div>
           <div className="stat-meta">
@@ -97,15 +97,15 @@ export default async function AnalyticsTab() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Job Titles distribution */}
         <div className="surface">
-          <h2 className="t-title-md mb-4" style={{ fontSize: "0.9375rem" }}>Personnel by Job Title</h2>
-          <div className="stack-sm" style={{ gap: "var(--space-3)" }}>
+          <h2 className="t-title-md mb-4">Personnel by Job Title</h2>
+          <div className="stack-sm">
             {Object.entries(rolesBreakdown).map(([title, count]) => {
               const percentage = employees.length ? (count / employees.length) * 100 : 0
               return (
-                <div key={title} className="stack-sm" style={{ gap: 4 }}>
+                <div key={title} className="stack-xs">
                   <div className="row-between">
-                    <span className="t-body-sm" style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>{title}</span>
-                    <span className="t-mono-sm" style={{ color: "var(--color-text-secondary)" }}>{count} ({Math.round(percentage)}%)</span>
+                    <span className="t-body-sm t-primary" style={{ fontWeight: 500 }}>{title}</span>
+                    <span className="t-mono-sm t-secondary">{count} ({Math.round(percentage)}%)</span>
                   </div>
                   <div className="w-full bg-base-300 rounded-full h-2 overflow-hidden">
                     <div className="bg-primary h-full" style={{ width: `${percentage}%` }} />
@@ -118,15 +118,15 @@ export default async function AnalyticsTab() {
 
         {/* Status Distribution */}
         <div className="surface">
-          <h2 className="t-title-md mb-4" style={{ fontSize: "0.9375rem" }}>Status Distribution</h2>
-          <div className="stack-sm" style={{ gap: "var(--space-3)" }}>
+          <h2 className="t-title-md mb-4">Status Distribution</h2>
+          <div className="stack-sm">
             {Object.entries(statusBreakdown).map(([status, count]) => {
               const percentage = employees.length ? (count / employees.length) * 100 : 0
               return (
-                <div key={status} className="stack-sm" style={{ gap: 4 }}>
+                <div key={status} className="stack-xs">
                   <div className="row-between">
-                    <span className="t-body-sm" style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>{status}</span>
-                    <span className="t-mono-sm" style={{ color: "var(--color-text-secondary)" }}>{count} ({Math.round(percentage)}%)</span>
+                    <span className="t-body-sm t-primary" style={{ fontWeight: 500 }}>{status}</span>
+                    <span className="t-mono-sm t-secondary">{count} ({Math.round(percentage)}%)</span>
                   </div>
                   <div className="w-full bg-base-300 rounded-full h-2 overflow-hidden">
                     <div className="bg-secondary h-full" style={{ width: `${percentage}%` }} />

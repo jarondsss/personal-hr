@@ -110,7 +110,7 @@ export default function MasterDataPage() {
   const isAccountsTab = activeTab === ACCOUNTS_TAB
 
   return (
-    <div className="space-y-6">
+    <div className="stack-lg">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Master Data</h1>
         {isAccountsTab ? (
@@ -180,10 +180,10 @@ export default function MasterDataPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="card bg-base-100 shadow-xl border border-base-200"
+            className="surface"
           >
-            <div className="card-body p-6 md:p-8">
-              <h2 className="card-title text-lg border-b pb-3">Company Settings</h2>
+            <div className="p-6 md:p-8">
+              <h2 className="t-title-md text-lg border-b pb-3">Company Settings</h2>
               <p className="text-sm opacity-70 mb-6">
                 Company information will appear on payslip printouts and other documents.
               </p>
@@ -357,10 +357,10 @@ export default function MasterDataPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="card bg-base-100 shadow-xl border border-base-200"
+            className="surface"
           >
-            <div className="card-body">
-              <h2 className="card-title text-lg border-b pb-2">User Accounts</h2>
+            <div className="p-6">
+              <h2 className="t-title-md text-lg border-b pb-2">User Accounts</h2>
               <div className="overflow-x-auto">
                 <table className="table table-sm">
                   <thead>
@@ -377,7 +377,7 @@ export default function MasterDataPage() {
                         <td>{u.email}</td>
                         <td>{u.employee?.fullName || <span className="opacity-40">-</span>}</td>
                         <td>
-                          <span className={`chip ${u.role === "ADMIN_HR" ? "bg-red-500/10 text-red-500" : "bg-blue-500/10 text-blue-500"} px-2 py-0.5 rounded text-xs`}>
+                          <span className="chip" data-tone={u.role === "ADMIN_HR" ? "danger" : "info"}>
                             {u.role}
                           </span>
                         </td>
@@ -424,10 +424,10 @@ export default function MasterDataPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="card bg-base-100 shadow-xl border border-base-200"
+            className="surface"
           >
-            <div className="card-body">
-              <h2 className="card-title text-lg border-b pb-2">
+            <div className="p-6">
+              <h2 className="t-title-md text-lg border-b pb-2">
                 {CATEGORIES.find((c) => c.value === activeTab)?.label}
               </h2>
               {activeTab === "JOB_TITLE" ? (

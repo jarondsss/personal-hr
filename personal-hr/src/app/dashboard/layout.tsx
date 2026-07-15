@@ -66,12 +66,12 @@ export default async function DashboardLayout({
           </div>
         </div>
         <div
-          className="flex items-center justify-center"
+          className="flex items-center justify-center t-primary"
           style={{
             width: 34, height: 34, borderRadius: "50%",
             background: "conic-gradient(from 200deg, var(--color-primary), var(--color-info), var(--color-primary))",
             border: "1px solid var(--color-border-strong)",
-            fontSize: 13, fontWeight: 600, color: "#FFF",
+            fontSize: 13, fontWeight: 600,
           }}
         >
           {userInitial}
@@ -134,12 +134,12 @@ export default async function DashboardLayout({
             }}
           >
             <div
-              className="flex-shrink-0 flex items-center justify-center"
+              className="flex-shrink-0 flex items-center justify-center t-primary"
               style={{
                 width: 36, height: 36, borderRadius: "50%",
                 background: "conic-gradient(from 200deg, var(--color-primary), var(--color-info), var(--color-primary))",
                 border: "1px solid var(--color-border-strong)",
-                fontSize: 14, fontWeight: 600, color: "#FFF",
+                fontSize: 14, fontWeight: 600,
               }}
             >
               {userInitial}
@@ -162,7 +162,7 @@ export default async function DashboardLayout({
 
         {/* Main content */}
         <main className="flex-1 min-h-screen" style={{ backgroundColor: "var(--color-background)" }}>
-          <div style={{ padding: "var(--space-8) var(--container-pad)", maxWidth: "var(--container-max)", marginInline: "auto" }}>
+          <div className="halo-container">
             {children}
           </div>
         </main>

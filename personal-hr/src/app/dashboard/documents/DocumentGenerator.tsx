@@ -99,9 +99,9 @@ export default function DocumentGenerator({
   }
 
   return (
-    <div className="card bg-base-100 shadow-xl border border-base-200">
-      <div className="card-body">
-        <h2 className="card-title text-xl mb-4">Generate Document</h2>
+    <div className="surface">
+      <div className="p-6">
+        <h2 className="t-title-md text-xl mb-4">Generate Document</h2>
 
         {error && <div className="alert alert-error mb-4">{error}</div>}
 

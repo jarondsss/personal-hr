@@ -197,8 +197,8 @@ export default function PayrollTable({ payrolls, companyProfile }: { payrolls: a
       </div>
 
       {/* Main Table */}
-      <div className="card bg-base-100 shadow-xl border border-base-200">
-        <div className="card-body p-0">
+      <div className="surface surface-flush">
+        <div className="p-0">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 p-4">
             {payrollColumns.map((items, index) => (
               <div key={index} className="overflow-x-auto">
