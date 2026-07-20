@@ -19,38 +19,39 @@ model User {
 }
 
 model Employee {
-  id             String            @id @default(cuid())
-  userId         String?           @unique
-  fullName       String
-  email          String            @unique
-  phone          String?
-  phone2         String?
-  discordId      String?
-  githubUsername String?
-  jobTitle       String
-  status         String
-  salary         Float
-  salaryType     String
-  joinDate       DateTime
-  startContract  DateTime?
-  endContract    DateTime?
-  birthPlace     String?
-  birthDate      DateTime?
-  gender         String?
-  idCardNumber   String?
-  npwp           String?
-  bankName       String?           @default("BCA")
-  bankAccount    String?
-  taxStatus      String?
-  address        String?
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
-  user           User?             @relation(fields: [userId], references: [id])
-  leaveQuotas    LeaveQuota[]
-  leaveRequests  LeaveRequest[]
-  overtimes      OvertimeRequest[]
-  payrolls       Payroll[]
-  projectMembers ProjectMember[]
+  id                    String                    @id @default(cuid())
+  userId                String?                   @unique
+  fullName              String
+  email                 String                    @unique
+  phone                 String?
+  phone2                String?
+  discordId             String?
+  githubUsername        String?
+  jobTitle              String
+  status                String
+  salary                Float
+  salaryType            String
+  joinDate              DateTime
+  startContract         DateTime?
+  endContract           DateTime?
+  birthPlace            String?
+  birthDate             DateTime?
+  gender                String?
+  idCardNumber          String?
+  npwp                  String?
+  bankName              String?                   @default("BCA")
+  bankAccount           String?
+  taxStatus             String?
+  address               String?
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  user                  User?                     @relation(fields: [userId], references: [id])
+  leaveQuotas           LeaveQuota[]
+  leaveRequests         LeaveRequest[]
+  overtimes             OvertimeRequest[]
+  overtimePeriodSummary OvertimePeriodSummary[]
+  payrolls              Payroll[]
+  projectMembers        ProjectMember[]
 }
 
 model Project {
@@ -125,6 +126,33 @@ model OvertimeRequest {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model OvertimePeriod {
+  id          String                    @id @default(cuid())
+  periodStart DateTime
+  periodEnd   DateTime
+  status      String                    @default("OPEN")
+  closedAt    DateTime?
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+  summaries   OvertimePeriodSummary[]
+
+  @@unique([periodStart, periodEnd])
+}
+
+model OvertimePeriodSummary {
+  id         String         @id @default(cuid())
+  periodId   String
+  employeeId String
+  totalHours Float
+  totalPay   Float
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  period     OvertimePeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  employee   Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([periodId, employeeId])
 }
 
 model Payroll {

@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma"
 import { getRequiredAdminSession } from "@/lib/session"
 import { revalidatePath } from "next/cache"
-import { endOfMonth, startOfMonth, differenceInBusinessDays, isWeekend } from "date-fns"
+import { endOfMonth, startOfMonth, differenceInBusinessDays } from "date-fns"
 import { calculatePPh21 } from "./pph21-calculator"
 
 export async function generatePayroll(formData: FormData) {
@@ -13,39 +13,44 @@ export async function generatePayroll(formData: FormData) {
     const month = parseInt(formData.get("month") as string)
     const year = parseInt(formData.get("year") as string)
 
-    // Get all public holidays from Master Data
-    const publicHolidaysData = await prisma.masterData.findMany({
-      where: { category: "PUBLIC_HOLIDAY" }
-    })
-    const publicHolidayDates = publicHolidaysData.map(h => new Date(h.value).toISOString().split('T')[0])
+    // Get closed overtime periods that END in this payroll month
+    const monthStart = new Date(year, month - 1, 1)
+    const monthEnd = new Date(year, month, 0)
 
-    const isPublicHolidayOrWeekend = (date: Date) => {
-      if (isWeekend(date)) return true
-      const dateString = date.toISOString().split('T')[0]
-      return publicHolidayDates.includes(dateString)
+    const closedPeriods = await prisma.overtimePeriod.findMany({
+      where: {
+        status: 'CLOSED',
+        periodEnd: {
+          gte: monthStart,
+          lte: monthEnd
+        }
+      },
+      include: {
+        summaries: true
+      }
+    })
+
+    // Build overtime pay map from closed periods
+    const overtimePayMap = new Map<string, number>()
+    for (const period of closedPeriods) {
+      for (const summary of period.summaries) {
+        const currentPay = overtimePayMap.get(summary.employeeId) || 0
+        overtimePayMap.set(summary.employeeId, currentPay + summary.totalPay)
+      }
     }
 
     // Get all employees
     const employees = await prisma.employee.findMany({
       include: {
-        overtimes: {
-          where: {
-            status: 'APPROVED',
-            date: {
-              gte: new Date(year, month - 1, 1),
-              lte: new Date(year, month, 0)
-            }
-          }
-        },
         leaveRequests: {
           where: {
             status: 'APPROVED',
             leaveType: 'UNPAID',
             startDate: {
-              gte: new Date(year, month - 1, 1),
+              gte: monthStart,
             },
             endDate: {
-              lte: new Date(year, month, 0)
+              lte: monthEnd
             }
           }
         }
@@ -56,33 +61,8 @@ export async function generatePayroll(formData: FormData) {
     const WORKING_DAYS_MONTH = 22;
 
     for (const emp of employees) {
-      // 1. Calculate Overtime (Standar Depnaker)
-      const HOURLY_RATE = emp.salary / 173;
-      let overtimePay = 0;
-
-      for (const ot of emp.overtimes) {
-        const hours = ot.durationHours;
-        if (hours <= 0) continue;
-
-        // Cek apakah tanggal lembur jatuh di hari libur/weekend atau hari libur nasional
-        if (isPublicHolidayOrWeekend(new Date(ot.date))) {
-          // Weekend / Public Holiday Overtime
-          if (hours <= 8) {
-            overtimePay += hours * 2.0 * HOURLY_RATE;
-          } else if (hours <= 9) {
-            overtimePay += (8 * 2.0 * HOURLY_RATE) + ((hours - 8) * 3.0 * HOURLY_RATE);
-          } else {
-            overtimePay += (8 * 2.0 * HOURLY_RATE) + (1 * 3.0 * HOURLY_RATE) + ((hours - 9) * 4.0 * HOURLY_RATE);
-          }
-        } else {
-          // Weekday Overtime
-          if (hours <= 1) {
-            overtimePay += hours * 1.5 * HOURLY_RATE;
-          } else {
-            overtimePay += (1 * 1.5 * HOURLY_RATE) + ((hours - 1) * 2.0 * HOURLY_RATE);
-          }
-        }
-      }
+      // 1. Get overtime pay from closed periods (already calculated)
+      const overtimePay = overtimePayMap.get(emp.id) || 0
 
       // 2. Base Date calculation (Full month view, e.g. Oct 1 - Oct 31)
       const monthStart = new Date(year, month - 1, 1)
@@ -121,9 +101,9 @@ export async function generatePayroll(formData: FormData) {
 
       const grossSalary = basicSalary + overtimePay
 
-      // NETT salary means tax is company-borne, so employee take-home is not deducted.
+      // PPh21 only applies to basic salary (uang lembur NON-PPh21 / tidak kena pajak)
       const deductions = emp.salaryType === 'GROSS'
-        ? calculatePPh21(grossSalary, emp.taxStatus)
+        ? calculatePPh21(basicSalary, emp.taxStatus)
         : 0
 
       const netSalary = grossSalary - deductions

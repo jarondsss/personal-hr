@@ -10,6 +10,7 @@ const navItems = [
   { label: "Master Data", href: "/dashboard/master-data", icon: "Database" },
   { label: "Leave", href: "/dashboard/leave", icon: "CalendarDays" },
   { label: "Overtime", href: "/dashboard/overtime", icon: "Clock" },
+  { label: "OT Periods", href: "/dashboard/overtime-periods", icon: "CalendarClock" },
   { label: "Payroll", href: "/dashboard/payroll", icon: "Wallet" },
   { label: "Documents", href: "/dashboard/documents", icon: "FileText" },
   { label: "E-Signature", href: "/dashboard/e-sign", icon: "PenSignature" },
@@ -132,6 +133,17 @@ function NavIcon({ name }: { name: string }) {
         <svg {...props}>
           <circle cx="12" cy="12" r="10" />
           <polyline points="12 6 12 12 16 14" />
+        </svg>
+      )
+    case "CalendarClock":
+      return (
+        <svg {...props}>
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+          <circle cx="12" cy="16" r="3" />
+          <polyline points="12 14.5 12 16 13 16.5" />
         </svg>
       )
     case "Wallet":
