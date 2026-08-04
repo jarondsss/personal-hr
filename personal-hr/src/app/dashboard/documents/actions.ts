@@ -42,11 +42,6 @@ export async function uploadTemplate(formData: FormData) {
 export async function deleteTemplate(id: string, fileName: string) {
   await getRequiredAdminSession()
 
-  // Prevent deleting our default seeded templates for safety during testing
-  if (['contract-template.docx', 'intern-template.docx', 'keterangan-template.docx'].includes(fileName)) {
-    throw new Error("Cannot delete default system templates")
-  }
-
   const filePath = path.join(process.cwd(), 'public/templates', fileName)
   try {
     await unlink(filePath)

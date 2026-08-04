@@ -71,25 +71,20 @@ export default function TemplateManager({ templates }: { templates: any[] }) {
               </tr>
             </thead>
             <tbody>
-              {templates.map(tpl => {
-                const isDefault = ['contract-template.docx', 'intern-template.docx', 'keterangan-template.docx'].includes(tpl.fileName)
-                return (
-                  <tr key={tpl.id}>
-                    <td className="font-medium">{tpl.name}</td>
-                    <td className="text-xs font-mono">{tpl.fileName}</td>
-                    <td className="text-right">
-                      {!isDefault && (
-                        <button 
-                          onClick={() => handleDelete(tpl.id, tpl.fileName)}
-                          className="btn btn-ghost btn-sm text-error"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                )
-              })}
+              {templates.map(tpl => (
+                <tr key={tpl.id}>
+                  <td className="font-medium">{tpl.name}</td>
+                  <td className="text-xs font-mono">{tpl.fileName}</td>
+                  <td className="text-right">
+                    <button
+                      onClick={() => handleDelete(tpl.id, tpl.fileName)}
+                      className="btn btn-ghost btn-sm text-error"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
