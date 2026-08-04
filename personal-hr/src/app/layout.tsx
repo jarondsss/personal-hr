@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "Human resources management system",
 };
 
+export const preferredRegion = "sin1";
+
 export default function RootLayout({
   children,
 }: Readonly<{

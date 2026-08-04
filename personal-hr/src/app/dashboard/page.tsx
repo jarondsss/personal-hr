@@ -34,25 +34,25 @@ export default async function DashboardPage(props: PageProps) {
       activeProjects,
       pendingLeaves,
       pendingOvertimes,
+      expiringContracts,
     ] = await Promise.all([
       prisma.employee.count(),
       prisma.project.count(),
       prisma.leaveRequest.count({ where: { status: "PENDING" } }),
       prisma.overtimeRequest.count({ where: { status: "PENDING" } }),
+      prisma.employee.findMany({
+        where: {
+          endContract: { not: null },
+        },
+        select: {
+          id: true,
+          fullName: true,
+          jobTitle: true,
+          endContract: true,
+        },
+        orderBy: { endContract: "asc" },
+      }),
     ]);
-
-    expiringContracts = await prisma.employee.findMany({
-      where: {
-        endContract: { not: null },
-      },
-      select: {
-        id: true,
-        fullName: true,
-        jobTitle: true,
-        endContract: true,
-      },
-      orderBy: { endContract: "asc" },
-    });
   } catch (err) {
     console.error("Failed to load dashboard data:", err);
   }
