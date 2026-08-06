@@ -11,11 +11,14 @@ export default function SkillLinksModal({ links, employees }: { links: any[]; em
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsCreating(true)
+    const form = e.currentTarget
     try {
-      await createSkillLink(new FormData(e.currentTarget))
-      e.currentTarget.reset()
-    } catch {
-      alert("Failed to create link")
+      await createSkillLink(new FormData(form))
+      form.reset()
+    } catch (err) {
+      if (err instanceof Error && err.message) {
+        alert(err.message)
+      }
     } finally {
       setIsCreating(false)
     }

@@ -11,12 +11,14 @@ export default function OnboardingLinksModal({ links }: { links: any[] }) {
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsCreating(true)
-    const formData = new FormData(e.currentTarget)
+    const form = e.currentTarget
     try {
-      await createOnboardingLink(formData)
-      e.currentTarget.reset()
+      await createOnboardingLink(new FormData(form))
+      form.reset()
     } catch (err) {
-      alert("Failed to create link")
+      if (err instanceof Error && err.message) {
+        alert(err.message)
+      }
     } finally {
       setIsCreating(false)
     }
