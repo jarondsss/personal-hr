@@ -171,3 +171,22 @@ export async function deleteEmployees(ids: string[]) {
   })
   revalidatePath("/dashboard/employees")
 }
+
+export async function deleteEmployeeSkill(skillId: string) {
+  await getRequiredAdminSession()
+  await prisma.employeeSkill.delete({ where: { id: skillId } })
+  revalidatePath("/dashboard/employees")
+}
+
+export async function addEmployeeSkill(employeeId: string, skill: string, level: string) {
+  await getRequiredAdminSession()
+  const validLevels = ["BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"]
+  await prisma.employeeSkill.create({
+    data: {
+      employeeId,
+      skill: skill.trim(),
+      level: validLevels.includes(level) ? level : "INTERMEDIATE",
+    },
+  })
+  revalidatePath("/dashboard/employees")
+}

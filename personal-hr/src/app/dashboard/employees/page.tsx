@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma"
 import EmployeeTable from "./EmployeeTable"
 import ImportEmployeeModal from "./ImportEmployeeModal"
 import OnboardingLinksModal from "./OnboardingLinksModal"
+import SkillLinksModal from "./SkillLinksModal"
 import EmployeeActions from "./EmployeeActions"
 import PageTransition from "@/components/PageTransition"
 
@@ -15,6 +16,9 @@ export default async function EmployeesPage() {
         },
         overtimes: {
           orderBy: { date: 'desc' }
+        },
+        skills: {
+          orderBy: { createdAt: 'asc' }
         }
       },
       orderBy: { fullName: 'asc' }
@@ -28,6 +32,9 @@ export default async function EmployeesPage() {
   const jobTitleMap = new Map(masterData.map(d => [d.value, d.label]))
 
   const links = await prisma.onboardingLink.findMany({
+    orderBy: { createdAt: 'desc' }
+  })
+  const skillLinks = await prisma.skillLink.findMany({
     orderBy: { createdAt: 'desc' }
   })
 
@@ -57,6 +64,7 @@ export default async function EmployeesPage() {
       {/* Hidden Modals */}
       <ImportEmployeeModal />
       <OnboardingLinksModal links={links} />
+      <SkillLinksModal links={skillLinks} employees={employees} />
     </div>
     </PageTransition>
   )

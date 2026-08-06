@@ -3,7 +3,8 @@
 import { useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { deleteEmployee, deleteEmployees } from "./actions"
+import { deleteEmployee, deleteEmployees, deleteEmployeeSkill, addEmployeeSkill } from "./actions"
+import { Trash2, Plus } from "lucide-react"
 
 export default function EmployeeTable({ employees }: { employees: any[] }) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -12,6 +13,8 @@ export default function EmployeeTable({ employees }: { employees: any[] }) {
   const [bulkDelete, setBulkDelete] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [activeTab, setActiveTab] = useState<"details" | "leaves_overtime">("details")
+  const [newSkill, setNewSkill] = useState("")
+  const [newSkillLevel, setNewSkillLevel] = useState("INTERMEDIATE")
   const [currentPage, setCurrentPage] = useState(1)
   const [direction, setDirection] = useState(0) // 1 for next, -1 for prev
 
@@ -329,6 +332,84 @@ export default function EmployeeTable({ employees }: { employees: any[] }) {
                       <p className="text-white">{selectedEmp.githubUsername || '-'}</p>
                     </div>
                   </div>
+
+                  <hr className="halo-divider my-2" />
+
+                  <div>
+                    <p className="text-white/60 font-semibold mb-2">Skills</p>
+                    {selectedEmp.skills && selectedEmp.skills.length > 0 ? (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {selectedEmp.skills.map((s: any) => (
+                          <span key={s.id} className="chip inline-flex items-center gap-1" data-tone={s.level === 'EXPERT' || s.level === 'ADVANCED' ? 'success' : 'neutral'}>
+                            {s.skill}
+                            <span className="opacity-60 lowercase">· {s.level}</span>
+                            <button
+                              type="button"
+                              className="ml-1 hover:text-error transition-colors"
+                              onClick={async () => {
+                                await deleteEmployeeSkill(s.id)
+                                setSelectedEmp((prev: any) => prev ? {
+                                  ...prev,
+                                  skills: prev.skills.filter((sk: any) => sk.id !== s.id)
+                                } : null)
+                              }}
+                              aria-label={`Remove ${s.skill}`}
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-white/50 mb-3">No skills submitted.</p>
+                    )}
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="text"
+                        className="input input-bordered input-sm flex-1"
+                        placeholder="Add skill..."
+                        value={newSkill}
+                        onChange={(e) => setNewSkill(e.target.value)}
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter" && newSkill.trim()) {
+                            e.preventDefault()
+                            await addEmployeeSkill(selectedEmp.id, newSkill, newSkillLevel)
+                            setSelectedEmp((prev: any) => prev ? {
+                              ...prev,
+                              skills: [...(prev.skills || []), { id: `temp-${Date.now()}`, skill: newSkill.trim(), level: newSkillLevel }]
+                            } : null)
+                            setNewSkill("")
+                          }
+                        }}
+                      />
+                      <select
+                        className="select select-bordered select-sm w-36"
+                        value={newSkillLevel}
+                        onChange={(e) => setNewSkillLevel(e.target.value)}
+                      >
+                        <option value="BEGINNER">Beginner</option>
+                        <option value="INTERMEDIATE">Intermediate</option>
+                        <option value="ADVANCED">Advanced</option>
+                        <option value="EXPERT">Expert</option>
+                      </select>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-primary"
+                        disabled={!newSkill.trim()}
+                        onClick={async () => {
+                          if (!newSkill.trim()) return
+                          await addEmployeeSkill(selectedEmp.id, newSkill, newSkillLevel)
+                          setSelectedEmp((prev: any) => prev ? {
+                            ...prev,
+                            skills: [...(prev.skills || []), { id: `temp-${Date.now()}`, skill: newSkill.trim(), level: newSkillLevel }]
+                          } : null)
+                          setNewSkill("")
+                        }}
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                  </div>
                 </>
               ) : (
                 <div className="space-y-6">
@@ -420,10 +501,10 @@ export default function EmployeeTable({ employees }: { employees: any[] }) {
             </div>
 
             <div className="modal-action">
-              <button className="btn" onClick={() => { setSelectedEmp(null); setActiveTab("details"); }}>Close</button>
+              <button className="btn" onClick={() => { setSelectedEmp(null); setActiveTab("details"); setNewSkill(""); }}>Close</button>
             </div>
           </div>
-          <div className="modal-backdrop" onClick={() => { setSelectedEmp(null); setActiveTab("details"); }}>
+          <div className="modal-backdrop" onClick={() => { setSelectedEmp(null); setActiveTab("details"); setNewSkill(""); }}>
             <button>close</button>
           </div>
         </div>

@@ -52,6 +52,20 @@ model Employee {
   overtimePeriodSummary OvertimePeriodSummary[]
   payrolls              Payroll[]
   projectMembers        ProjectMember[]
+  skills                EmployeeSkill[]
+  skillLinks            SkillLink[]
+}
+
+model EmployeeSkill {
+  id         String   @id @default(cuid())
+  employeeId String
+  skill      String
+  level      String   @default("MEDIUM")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
 }
 
 model Project {
@@ -198,4 +212,15 @@ model OnboardingLink {
   name      String
   isUsed    Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model SkillLink {
+  id         String   @id @default(cuid())
+  token      String   @unique
+  email      String
+  name       String
+  employeeId String?
+  isUsed     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  employee   Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
 }

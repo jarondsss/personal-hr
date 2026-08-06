@@ -96,3 +96,30 @@ export async function deleteOnboardingLink(id: string) {
   await prisma.onboardingLink.delete({ where: { id } })
   revalidatePath("/dashboard/employees")
 }
+
+export async function createSkillLink(formData: FormData) {
+  await getRequiredAdminSession()
+
+  const employeeId = formData.get("employeeId")?.toString()
+  if (!employeeId) throw new Error("Select an employee")
+
+  const employee = await prisma.employee.findUnique({ where: { id: employeeId } })
+  if (!employee) throw new Error("Employee not found")
+
+  const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+  await prisma.skillLink.create({
+    data: { email: employee.email, name: employee.fullName, employeeId: employee.id, token }
+  })
+  revalidatePath("/dashboard/employees")
+}
+
+export async function getSkillLinks() {
+  await getRequiredAdminSession()
+  return await prisma.skillLink.findMany({ orderBy: { createdAt: "desc" } })
+}
+
+export async function deleteSkillLink(id: string) {
+  await getRequiredAdminSession()
+  await prisma.skillLink.delete({ where: { id } })
+  revalidatePath("/dashboard/employees")
+}

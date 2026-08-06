@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Upload, Link as LinkIcon, Plus } from "lucide-react"
+import { Upload, Link as LinkIcon, Plus, Star } from "lucide-react"
 
 export default function EmployeeActions() {
   return (
@@ -18,6 +18,13 @@ export default function EmployeeActions() {
         onClick={() => (document.getElementById('onboarding_modal') as HTMLDialogElement)?.showModal()}
       >
         <LinkIcon size={16} /> Self-Onboarding
+      </button>
+
+      <button
+        className="btn btn-outline btn-primary rounded-full"
+        onClick={() => (document.getElementById('skill_modal') as HTMLDialogElement)?.showModal()}
+      >
+        <Star size={16} /> Skills Links
       </button>
 
       <Link href="/dashboard/employees/new" className="btn btn-primary rounded-full">
