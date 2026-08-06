@@ -1,9 +1,11 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { submitOnboarding } from "./actions"
 
 export default function OnboardingForm({ candidate }: { candidate: any }) {
+  const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -11,9 +13,17 @@ export default function OnboardingForm({ candidate }: { candidate: any }) {
     setIsSubmitting(true)
     const formData = new FormData(e.currentTarget)
     try {
-      await submitOnboarding(candidate.token, formData)
+      const result = await submitOnboarding(candidate.token, formData)
+      if (result?.ok) {
+        router.refresh()
+      } else {
+        alert("Failed to submit form")
+        setIsSubmitting(false)
+      }
     } catch (err) {
-      alert("Error submitting form")
+      if (err instanceof Error && err.message) {
+        alert(err.message)
+      }
       setIsSubmitting(false)
     }
   }

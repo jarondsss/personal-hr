@@ -1,7 +1,6 @@
 "use server"
 
 import prisma from "@/lib/prisma"
-import { redirect } from "next/navigation"
 
 export async function submitOnboarding(token: string, formData: FormData) {
   const link = await prisma.onboardingLink.findUnique({
@@ -56,5 +55,5 @@ export async function submitOnboarding(token: string, formData: FormData) {
     data: { isUsed: true }
   })
 
-  redirect(`/onboarding/${token}`)
+  return { ok: true }
 }
