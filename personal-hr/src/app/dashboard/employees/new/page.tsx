@@ -6,204 +6,273 @@ import PageTransition from "@/components/PageTransition"
 
 export default async function NewEmployeePage() {
   const masterData = await prisma.masterData.findMany({
-    where: {
-      category: { in: ['JOB_TITLE', 'EMP_STATUS'] }
-    }
+    where: { category: { in: ["JOB_TITLE", "EMP_STATUS"] } },
   })
 
-  const jobTitles = masterData.filter(d => d.category === 'JOB_TITLE')
-  const empStatuses = masterData.filter(d => d.category === 'EMP_STATUS')
+  const jobTitles = masterData.filter((d) => d.category === "JOB_TITLE")
+  const empStatuses = masterData.filter((d) => d.category === "EMP_STATUS")
 
   return (
     <PageTransition>
-    <div className="space-y-6 max-w-5xl mx-auto pb-10 px-2 sm:px-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard/employees" className="btn btn-ghost btn-sm btn-circle">
-            <ArrowLeft className="w-5 h-5" />
+      <div style={{ maxWidth: 900, margin: "0 auto", paddingBottom: 40 }}>
+        {/* Page header */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 28 }}>
+          <Link
+            href="/dashboard/employees"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 34,
+              height: 34,
+              borderRadius: "var(--radius-sm)",
+              border: "1px solid var(--color-border)",
+              backgroundColor: "var(--color-elevated)",
+              color: "var(--color-text-secondary)",
+              flexShrink: 0,
+              transition: "border-color 0.15s",
+              textDecoration: "none",
+            }}
+          >
+            <ArrowLeft size={16} />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">Add New Employee</h1>
-            <p className="text-base-content/70 text-sm mt-1">Fill in the details to register a new employee.</p>
+            <h1 className="page-title">Add New Employee</h1>
+            <p className="page-subtitle">Fill in the details to register a new team member.</p>
           </div>
         </div>
-      </div>
 
-      <div className="card bg-base-100 shadow-xl border border-base-200">
-        <div className="card-body p-6 sm:p-10">
-          <form action={createEmployee} className="space-y-10">
-            
-            {/* 1. Personal Information */}
-            <section>
-              <h2 className="text-xl font-semibold border-b pb-2 mb-6 text-primary">Personal Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Full Name *</span></label>
-                  <input type="text" name="fullName" className="input input-bordered w-full" required />
-                </div>
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Email Address *</span></label>
-                  <input type="email" name="email" className="input input-bordered w-full" required />
-                </div>
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Phone Number</span></label>
-                  <input type="text" name="phone" className="input input-bordered w-full" />
-                </div>
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Emergency Phone</span></label>
-                  <input type="text" name="phone2" className="input input-bordered w-full" />
-                </div>
-                
-                {/* New Fields */}
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">ID Card (KTP)</span></label>
-                  <input type="text" name="idCardNumber" className="input input-bordered w-full" placeholder="16 digit KTP" />
-                </div>
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Gender</span></label>
-                  <select name="gender" className="select select-bordered w-full" defaultValue="">
-                    <option value="" disabled>-- Select Gender --</option>
-                    <option value="Laki-laki">Laki-laki</option>
-                    <option value="Perempuan">Perempuan</option>
-                  </select>
-                </div>
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Birth Place</span></label>
-                  <input type="text" name="birthPlace" className="input input-bordered w-full" placeholder="e.g. Jakarta" />
-                </div>
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Birth Date</span></label>
-                  <input type="date" name="birthDate" className="input input-bordered w-full" />
-                </div>
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">NPWP</span></label>
-                  <input type="text" name="npwp" className="input input-bordered w-full" placeholder="15 digit NPWP" />
-                </div>
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Status PTKP (Pajak)</span></label>
-                  <select name="taxStatus" className="select select-bordered w-full" defaultValue="TK0">
-                    <option value="TK0">TK/0 (Tidak Kawin, 0 Tanggungan)</option>
-                    <option value="TK1">TK/1 (Tidak Kawin, 1 Tanggungan)</option>
-                    <option value="TK2">TK/2 (Tidak Kawin, 2 Tanggungan)</option>
-                    <option value="TK3">TK/3 (Tidak Kawin, 3 Tanggungan)</option>
-                    <option value="K0">K/0 (Kawin, 0 Tanggungan)</option>
-                    <option value="K1">K/1 (Kawin, 1 Tanggungan)</option>
-                    <option value="K2">K/2 (Kawin, 2 Tanggungan)</option>
-                    <option value="K3">K/3 (Kawin, 3 Tanggungan)</option>
-                    <option value="K10">K/I/0 (Kawin Istri Bekerja, 0 Tanggungan)</option>
-                    <option value="K11">K/I/1 (Kawin Istri Bekerja, 1 Tanggungan)</option>
-                    <option value="K12">K/I/2 (Kawin Istri Bekerja, 2 Tanggungan)</option>
-                    <option value="K13">K/I/3 (Kawin Istri Bekerja, 3 Tanggungan)</option>
-                  </select>
-                </div>
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Bank Name</span></label>
-                  <select name="bankName" className="select select-bordered w-full" defaultValue="BCA">
-                    <option value="BCA">BCA (Free Transfer Fee)</option>
-                    <option value="MANDIRI">Mandiri</option>
-                    <option value="BNI">BNI</option>
-                    <option value="BRI">BRI</option>
-                    <option value="OTHER">Bank Lainnya</option>
-                  </select>
-                  <label className="label"><span className="label-text-alt text-warning">Non-BCA = Potong biaya admin</span></label>
-                </div>
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Account Number</span></label>
-                  <input type="text" name="bankAccount" className="input input-bordered w-full" placeholder="e.g. 1234567890" />
-                </div>
-                {/* End New Fields */}
+        <form action={createEmployee} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
 
-                <div className="form-control md:col-span-2">
-                  <label className="label"><span className="label-text font-medium">Address</span></label>
-                  <textarea name="address" className="textarea textarea-bordered h-24 w-full"></textarea>
-                </div>
+          {/* Section 1 — Personal Information */}
+          <FormSection title="Personal Information" index={1}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              <FormField label="Full Name" required>
+                <input type="text" name="fullName" className="input input-bordered w-full" required />
+              </FormField>
+              <FormField label="Email Address" required>
+                <input type="email" name="email" className="input input-bordered w-full" required />
+              </FormField>
+              <FormField label="Phone Number">
+                <input type="text" name="phone" className="input input-bordered w-full" placeholder="+62..." />
+              </FormField>
+              <FormField label="Emergency Phone">
+                <input type="text" name="phone2" className="input input-bordered w-full" placeholder="+62..." />
+              </FormField>
+              <FormField label="ID Card (KTP)">
+                <input type="text" name="idCardNumber" className="input input-bordered w-full" placeholder="16 digit" />
+              </FormField>
+              <FormField label="Gender">
+                <select name="gender" className="select select-bordered w-full" defaultValue="">
+                  <option value="" disabled>Select gender...</option>
+                  <option value="Laki-laki">Laki-laki</option>
+                  <option value="Perempuan">Perempuan</option>
+                </select>
+              </FormField>
+              <FormField label="Birth Place">
+                <input type="text" name="birthPlace" className="input input-bordered w-full" placeholder="e.g. Jakarta" />
+              </FormField>
+              <FormField label="Birth Date">
+                <input type="date" name="birthDate" className="input input-bordered w-full" />
+              </FormField>
+              <FormField label="NPWP">
+                <input type="text" name="npwp" className="input input-bordered w-full" placeholder="15 digit" />
+              </FormField>
+              <FormField label="Tax Status (PTKP)">
+                <select name="taxStatus" className="select select-bordered w-full" defaultValue="TK0">
+                  <option value="TK0">TK/0 — Tidak Kawin, 0 Tanggungan</option>
+                  <option value="TK1">TK/1 — Tidak Kawin, 1 Tanggungan</option>
+                  <option value="TK2">TK/2 — Tidak Kawin, 2 Tanggungan</option>
+                  <option value="TK3">TK/3 — Tidak Kawin, 3 Tanggungan</option>
+                  <option value="K0">K/0 — Kawin, 0 Tanggungan</option>
+                  <option value="K1">K/1 — Kawin, 1 Tanggungan</option>
+                  <option value="K2">K/2 — Kawin, 2 Tanggungan</option>
+                  <option value="K3">K/3 — Kawin, 3 Tanggungan</option>
+                  <option value="K10">K/I/0 — Kawin Istri Bekerja, 0 Tanggungan</option>
+                  <option value="K11">K/I/1 — Kawin Istri Bekerja, 1 Tanggungan</option>
+                  <option value="K12">K/I/2 — Kawin Istri Bekerja, 2 Tanggungan</option>
+                  <option value="K13">K/I/3 — Kawin Istri Bekerja, 3 Tanggungan</option>
+                </select>
+              </FormField>
+              <FormField label="Bank">
+                <select name="bankName" className="select select-bordered w-full" defaultValue="BCA">
+                  <option value="BCA">BCA (Free Transfer Fee)</option>
+                  <option value="MANDIRI">Mandiri</option>
+                  <option value="BNI">BNI</option>
+                  <option value="BRI">BRI</option>
+                  <option value="OTHER">Bank Lainnya</option>
+                </select>
+                <p style={{ fontSize: "0.75rem", color: "var(--color-warning)", marginTop: 4 }}>
+                  Non-BCA dikenakan biaya admin transfer
+                </p>
+              </FormField>
+              <FormField label="Account Number">
+                <input type="text" name="bankAccount" className="input input-bordered w-full" placeholder="e.g. 1234567890" />
+              </FormField>
+              <div className="md:col-span-2">
+                <FormField label="Address">
+                  <textarea name="address" className="textarea textarea-bordered w-full" rows={3} placeholder="Alamat lengkap..." />
+                </FormField>
               </div>
-            </section>
-
-            {/* 2. Employment Details */}
-            <section>
-              <h2 className="text-xl font-semibold border-b pb-2 mb-6 text-primary">Employment Details</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Job Title *</span></label>
-                  <select name="jobTitle" className="select select-bordered w-full" required defaultValue="">
-                    <option value="" disabled>Select Job Title...</option>
-                    {jobTitles.map(t => (
-                      <option key={t.id} value={t.value}>{t.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Employment Status *</span></label>
-                  <select name="status" className="select select-bordered w-full" required defaultValue="">
-                    <option value="" disabled>Select Status...</option>
-                    {empStatuses.map(s => (
-                      <option key={s.id} value={s.value}>{s.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Join Date *</span></label>
-                  <input type="date" name="joinDate" className="input input-bordered w-full" required />
-                </div>
-              </div>
-            </section>
-
-            {/* 3. Compensation & Contract */}
-            <section>
-              <h2 className="text-xl font-semibold border-b pb-2 mb-6 text-primary">Compensation & Contract</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Base Salary *</span></label>
-                  <label className="input input-bordered flex items-center gap-2">
-                    <span className="text-base-content/50">Rp</span>
-                    <input type="number" name="salary" className="grow" placeholder="0" required />
-                  </label>
-                </div>
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Salary Type *</span></label>
-                  <select name="salaryType" className="select select-bordered w-full" required defaultValue="GROSS">
-                    <option value="GROSS">Gross</option>
-                    <option value="NETT">Nett</option>
-                  </select>
-                </div>
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Contract Start Date</span></label>
-                  <input type="date" name="startContract" className="input input-bordered w-full" />
-                </div>
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Contract End Date</span></label>
-                  <input type="date" name="endContract" className="input input-bordered w-full" />
-                </div>
-              </div>
-            </section>
-
-            {/* 4. Integrations */}
-            <section>
-              <h2 className="text-xl font-semibold border-b pb-2 mb-6 text-primary">Integrations</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">Discord ID</span></label>
-                  <input type="text" name="discordId" className="input input-bordered w-full" placeholder="e.g. 1234567890" />
-                </div>
-                <div className="form-control">
-                  <label className="label"><span className="label-text font-medium">GitHub Username</span></label>
-                  <input type="text" name="githubUsername" className="input input-bordered w-full" placeholder="e.g. torvalds" />
-                </div>
-              </div>
-            </section>
-
-            <div className="divider my-8"></div>
-
-            <div className="flex justify-end gap-4">
-              <Link href="/dashboard/employees" className="btn btn-ghost">Cancel</Link>
-              <button type="submit" className="btn btn-primary px-8 rounded-full">Save Employee</button>
             </div>
-            
-          </form>
+          </FormSection>
+
+          {/* Section 2 — Employment Details */}
+          <FormSection title="Employment Details" index={2}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+              <FormField label="Job Title" required>
+                <select name="jobTitle" className="select select-bordered w-full" required defaultValue="">
+                  <option value="" disabled>Select job title...</option>
+                  {jobTitles.map((t) => (
+                    <option key={t.id} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+              </FormField>
+              <FormField label="Employment Type" required>
+                <select name="status" className="select select-bordered w-full" required defaultValue="">
+                  <option value="" disabled>Select type...</option>
+                  {empStatuses.map((s) => (
+                    <option key={s.id} value={s.value}>{s.label}</option>
+                  ))}
+                </select>
+              </FormField>
+              <FormField label="Active Status">
+                <select name="isActive" className="select select-bordered w-full" defaultValue="true">
+                  <option value="true">Active</option>
+                  <option value="false">Inactive</option>
+                </select>
+              </FormField>
+              <FormField label="Join Date" required>
+                <input type="date" name="joinDate" className="input input-bordered w-full" required />
+              </FormField>
+            </div>
+          </FormSection>
+
+          {/* Section 3 — Compensation & Contract */}
+          <FormSection title="Compensation & Contract" index={3}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              <FormField label="Base Salary" required>
+                <div style={{ position: "relative" }}>
+                  <span style={{
+                    position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)",
+                    color: "var(--color-text-muted)", fontFamily: "var(--font-display)", fontSize: "0.875rem",
+                    pointerEvents: "none",
+                  }}>Rp</span>
+                  <input
+                    type="number" name="salary" required placeholder="0"
+                    className="input input-bordered w-full"
+                    style={{ paddingLeft: 36 }}
+                  />
+                </div>
+              </FormField>
+              <FormField label="Salary Type" required>
+                <select name="salaryType" className="select select-bordered w-full" required defaultValue="GROSS">
+                  <option value="GROSS">Gross</option>
+                  <option value="NETT">Nett</option>
+                </select>
+              </FormField>
+              <FormField label="Contract Start">
+                <input type="date" name="startContract" className="input input-bordered w-full" />
+              </FormField>
+              <FormField label="Contract End">
+                <input type="date" name="endContract" className="input input-bordered w-full" />
+              </FormField>
+            </div>
+          </FormSection>
+
+          {/* Section 4 — Integrations */}
+          <FormSection title="Integrations" index={4}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              <FormField label="Discord ID">
+                <input type="text" name="discordId" className="input input-bordered w-full" placeholder="e.g. 123456789012345678" />
+              </FormField>
+              <FormField label="GitHub Username">
+                <input type="text" name="githubUsername" className="input input-bordered w-full" placeholder="e.g. torvalds" />
+              </FormField>
+            </div>
+          </FormSection>
+
+          {/* Actions */}
+          <div style={{
+            display: "flex", justifyContent: "flex-end", gap: 10,
+            paddingTop: 24, marginTop: 8,
+            borderTop: "1px solid var(--color-border)",
+          }}>
+            <Link href="/dashboard/employees" className="btn btn-outline">
+              Cancel
+            </Link>
+            <button type="submit" className="btn btn-primary" style={{ minWidth: 120 }}>
+              Save Employee
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </PageTransition>
+  )
+}
+
+/* ── Shared primitives ── */
+function FormSection({ title, index, children }: { title: string; index: number; children: React.ReactNode }) {
+  return (
+    <div style={{
+      backgroundColor: "var(--color-surface)",
+      border: "1px solid var(--color-border)",
+      borderRadius: "var(--radius-md)",
+      marginBottom: 12,
+      overflow: "hidden",
+    }}>
+      {/* Section header */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "14px 24px",
+        borderBottom: "1px solid var(--color-border)",
+        backgroundColor: "var(--color-elevated)",
+      }}>
+        <div style={{
+          width: 22, height: 22,
+          borderRadius: 6,
+          backgroundColor: "var(--color-primary-soft)",
+          border: "1px solid var(--color-primary-border)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontFamily: "var(--font-display)", fontSize: "0.6875rem",
+          fontWeight: 700, color: "var(--color-primary-hover)",
+          flexShrink: 0,
+        }}>
+          {index}
         </div>
+        <span style={{
+          fontFamily: "var(--font-display)",
+          fontSize: "0.875rem",
+          fontWeight: 600,
+          letterSpacing: "-0.01em",
+          color: "var(--color-text-primary)",
+        }}>
+          {title}
+        </span>
+      </div>
+      <div style={{ padding: "20px 24px" }}>
+        {children}
       </div>
     </div>
-    </PageTransition>
+  )
+}
+
+function FormField({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <label style={{
+        fontFamily: "var(--font-display)",
+        fontSize: "0.8125rem",
+        fontWeight: 500,
+        color: "var(--color-text-secondary)",
+      }}>
+        {label}
+        {required && <span style={{ color: "var(--color-danger)", marginLeft: 3 }}>*</span>}
+      </label>
+      {children}
+    </div>
   )
 }

@@ -7,21 +7,19 @@ export default async function OvertimePeriodsPage() {
   const periods = await prisma.overtimePeriod.findMany({
     include: {
       summaries: {
-        include: {
-          employee: true
-        }
-      }
+        include: { employee: true },
+      },
     },
-    orderBy: { periodStart: 'desc' }
+    orderBy: { periodStart: "desc" },
   })
 
   return (
     <PageTransition>
       <div className="stack-lg">
-        <div className="flex justify-between items-center">
+        <div className="page-header">
           <div>
-            <h1 className="text-2xl font-bold">Overtime Periods</h1>
-            <p className="text-base-content/70">Manage overtime calculation periods (21st - 20th cycle)</p>
+            <h1 className="page-title">Overtime Periods</h1>
+            <p className="page-subtitle">Manage overtime calculation periods (21st – 20th cycle)</p>
           </div>
           <CreatePeriodForm />
         </div>

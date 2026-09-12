@@ -11,61 +11,45 @@ export default async function EmployeesPage() {
     prisma.employee.findMany({
       include: {
         leaveQuotas: true,
-        leaveRequests: {
-          orderBy: { startDate: 'desc' }
-        },
-        overtimes: {
-          orderBy: { date: 'desc' }
-        },
-        skills: {
-          orderBy: { createdAt: 'asc' }
-        }
+        leaveRequests: { orderBy: { startDate: "desc" } },
+        overtimes: { orderBy: { date: "desc" } },
+        skills: { orderBy: { createdAt: "asc" } },
       },
-      orderBy: { fullName: 'asc' }
+      orderBy: { fullName: "asc" },
     }),
-    prisma.masterData.findMany({
-      where: { category: 'JOB_TITLE' }
-    })
+    prisma.masterData.findMany({ where: { category: "JOB_TITLE" } }),
   ])
 
-  // Create a map for job title values to labels
-  const jobTitleMap = new Map(masterData.map(d => [d.value, d.label]))
+  const jobTitleMap = new Map(masterData.map((d) => [d.value, d.label]))
 
-  const links = await prisma.onboardingLink.findMany({
-    orderBy: { createdAt: 'desc' }
-  })
-  const skillLinks = await prisma.skillLink.findMany({
-    orderBy: { createdAt: 'desc' }
-  })
+  const links = await prisma.onboardingLink.findMany({ orderBy: { createdAt: "desc" } })
+  const skillLinks = await prisma.skillLink.findMany({ orderBy: { createdAt: "desc" } })
 
-  // Map employees to include job title label
-  const employeesWithLabels = employees.map(emp => ({
+  const employeesWithLabels = employees.map((emp) => ({
     ...emp,
-    jobTitleLabel: jobTitleMap.get(emp.jobTitle) || emp.jobTitle.replace(/_/g, ' ')
+    jobTitleLabel: jobTitleMap.get(emp.jobTitle) || emp.jobTitle.replace(/_/g, " "),
   }))
 
   return (
     <PageTransition>
-    <div className="stack-lg">
-      <div className="row-between">
-        <div className="stack-sm">
-          <h1 className="t-headline-lg" style={{ fontSize: "1.75rem" }}>
-            Employees
-          </h1>
-          <p className="t-body-sm" style={{ marginTop: 2 }}>
-            Manage your company personnel
-          </p>
+      <div className="stack-lg">
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">Employees</h1>
+            <p className="page-subtitle">
+              {employees.length} employee{employees.length !== 1 ? "s" : ""} · Manage company personnel
+            </p>
+          </div>
+          <EmployeeActions />
         </div>
-        <EmployeeActions />
+
+        <EmployeeTable employees={employeesWithLabels} />
+
+        {/* Hidden Modals */}
+        <ImportEmployeeModal />
+        <OnboardingLinksModal links={links} />
+        <SkillLinksModal links={skillLinks} employees={employees} />
       </div>
-
-      <EmployeeTable employees={employeesWithLabels} />
-
-      {/* Hidden Modals */}
-      <ImportEmployeeModal />
-      <OnboardingLinksModal links={links} />
-      <SkillLinksModal links={skillLinks} employees={employees} />
-    </div>
     </PageTransition>
   )
 }

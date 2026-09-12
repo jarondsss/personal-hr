@@ -111,12 +111,15 @@ export default function MasterDataPage() {
 
   return (
     <div className="stack-lg">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Master Data</h1>
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Master Data</h1>
+          <p className="page-subtitle">Manage reference data, company settings, and user accounts</p>
+        </div>
         {isAccountsTab ? (
           <label
             htmlFor="add_user_modal"
-            className="btn btn-primary rounded-full"
+            className="btn btn-primary"
             onClick={() => {
               setUserError(null)
             }}
@@ -126,7 +129,7 @@ export default function MasterDataPage() {
         ) : !isCompanyTab ? (
           <label
             htmlFor="add_modal"
-            className="btn btn-primary rounded-full"
+            className="btn btn-primary"
             onClick={() => {
               setSelectedCategory(activeTab)
               setError(null)
@@ -137,7 +140,7 @@ export default function MasterDataPage() {
         ) : null}
       </div>
 
-      <div className="halo-tabs relative my-2" role="tablist">
+      <div className="halo-tabs" role="tablist" style={{ flexWrap: "wrap" }}>
         {[
           ...CATEGORIES,
           { value: COMPANY_TAB, label: "Company Settings" },
@@ -147,10 +150,12 @@ export default function MasterDataPage() {
           return (
             <button
               key={cat.value}
-              className={`halo-tab relative z-10 transition-colors duration-150 ${
-                isActive ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)]"
-              }`}
-              style={{ border: "none" }}
+              className="halo-tab"
+              style={{
+                color: isActive ? "var(--color-text-primary)" : "var(--color-text-secondary)",
+                backgroundColor: isActive ? "var(--color-surface)" : "transparent",
+                boxShadow: isActive ? "var(--shadow-xs)" : "none",
+              }}
               onClick={() => {
                 setActiveTab(cat.value)
                 if (cat.value === COMPANY_TAB) refreshCompany()
@@ -160,13 +165,6 @@ export default function MasterDataPage() {
               aria-selected={isActive}
             >
               {cat.label}
-              {isActive && (
-                <motion.div
-                  layoutId="active-master-data-tab"
-                  className="absolute inset-0 bg-[var(--color-elevated)] border border-[var(--color-primary)] rounded-full -z-10"
-                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                />
-              )}
             </button>
           )
         })}
@@ -183,7 +181,7 @@ export default function MasterDataPage() {
             className="surface"
           >
             <div className="p-6 md:p-8">
-              <h2 className="t-title-md text-lg border-b pb-3">Company Settings</h2>
+              <h2 className="t-title-md text-lg border-b border-[var(--color-border)] pb-3">Company Settings</h2>
               <p className="text-sm opacity-70 mb-6">
                 Company information will appear on payslip printouts and other documents.
               </p>
@@ -249,7 +247,7 @@ export default function MasterDataPage() {
                       />
                       <button
                         type="button"
-                        className="btn btn-outline btn-sm rounded-full"
+                        className="btn btn-outline btn-sm"
                         disabled={isUploadingLogo}
                         onClick={() => fileInputRef.current?.click()}
                       >
@@ -343,7 +341,7 @@ export default function MasterDataPage() {
                 </div>
 
                 <div className="grid grid-cols-[120px_1fr] gap-4 pt-2">
-                  <button type="submit" className="btn btn-primary rounded-full col-start-2 justify-self-start" disabled={isSaving}>
+                  <button type="submit" className="btn btn-primary col-start-2 justify-self-start" disabled={isSaving}>
                     {isSaving ? <span className="loading loading-spinner"></span> : "Save Company Profile"}
                   </button>
                 </div>
@@ -360,7 +358,7 @@ export default function MasterDataPage() {
             className="surface"
           >
             <div className="p-6">
-              <h2 className="t-title-md text-lg border-b pb-2">User Accounts</h2>
+              <h2 className="t-title-md text-lg border-b border-[var(--color-border)] pb-2">User Accounts</h2>
               <div className="overflow-x-auto">
                 <table className="table table-sm">
                   <thead>
@@ -427,7 +425,7 @@ export default function MasterDataPage() {
             className="surface"
           >
             <div className="p-6">
-              <h2 className="t-title-md text-lg border-b pb-2">
+              <h2 className="t-title-md text-lg border-b border-[var(--color-border)] pb-2">
                 {CATEGORIES.find((c) => c.value === activeTab)?.label}
               </h2>
               {activeTab === "JOB_TITLE" ? (
@@ -586,7 +584,7 @@ export default function MasterDataPage() {
 
             <div className="modal-action">
               <label htmlFor="add_modal" className="btn btn-ghost" onClick={() => setError(null)}>Cancel</label>
-              <button type="submit" className="btn btn-primary rounded-full">Save</button>
+              <button type="submit" className="btn btn-primary">Save</button>
             </div>
           </form>
         </div>
@@ -656,7 +654,7 @@ export default function MasterDataPage() {
 
             <div className="modal-action">
               <label htmlFor="add_user_modal" className="btn btn-ghost" onClick={() => setUserError(null)}>Cancel</label>
-              <button type="submit" className="btn btn-primary rounded-full">Save</button>
+              <button type="submit" className="btn btn-primary">Save</button>
             </div>
           </form>
         </div>
@@ -725,7 +723,7 @@ export default function MasterDataPage() {
                 >
                   Cancel
                 </label>
-                <button type="submit" className="btn btn-primary rounded-full">Save</button>
+              <button type="submit" className="btn btn-primary">Save</button>
               </div>
             </form>
           )}

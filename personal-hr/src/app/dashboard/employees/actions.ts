@@ -60,6 +60,8 @@ export async function createEmployee(formData: FormData) {
   }
 
   const validated = employeeSchema.parse(data)
+  const isActiveRaw = formData.get("isActive")?.toString()
+  const isActive = isActiveRaw !== "false"
 
   await prisma.employee.create({
     data: {
@@ -71,6 +73,7 @@ export async function createEmployee(formData: FormData) {
       githubUsername: validated.githubUsername || null,
       jobTitle: validated.jobTitle,
       status: validated.status,
+      isActive,
       salary: validated.salary,
       salaryType: validated.salaryType,
       joinDate: new Date(validated.joinDate),
@@ -121,6 +124,8 @@ export async function updateEmployee(id: string, formData: FormData) {
   }
 
   const validated = employeeSchema.parse(data)
+  const isActiveRaw = formData.get("isActive")?.toString()
+  const isActive = isActiveRaw !== "false"
 
   await prisma.employee.update({
     where: { id },
@@ -133,6 +138,7 @@ export async function updateEmployee(id: string, formData: FormData) {
       githubUsername: validated.githubUsername || null,
       jobTitle: validated.jobTitle,
       status: validated.status,
+      isActive,
       salary: validated.salary,
       salaryType: validated.salaryType,
       joinDate: new Date(validated.joinDate),
@@ -189,4 +195,16 @@ export async function addEmployeeSkill(employeeId: string, skill: string, level:
     },
   })
   revalidatePath("/dashboard/employees")
+}
+
+export async function toggleEmployeeStatus(id: string, currentIsActive: boolean) {
+  await getRequiredAdminSession()
+
+  await prisma.employee.update({
+    where: { id },
+    data: { isActive: !currentIsActive },
+  })
+
+  revalidatePath("/dashboard/employees")
+  return { success: true, newIsActive: !currentIsActive }
 }

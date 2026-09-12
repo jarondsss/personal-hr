@@ -7,30 +7,37 @@ export default async function LeavePage() {
   const [requests, employees, leaveTypes] = await Promise.all([
     prisma.leaveRequest.findMany({
       include: { employee: true },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     }),
-    prisma.employee.findMany({
-      orderBy: { fullName: 'asc' }
-    }),
+    prisma.employee.findMany({ orderBy: { fullName: "asc" } }),
     prisma.masterData.findMany({
-      where: { category: 'LEAVE_TYPE' },
-      orderBy: { label: 'asc' }
-    })
+      where: { category: "LEAVE_TYPE" },
+      orderBy: { label: "asc" },
+    }),
   ])
+
+  const pending = requests.filter((r) => r.status === "PENDING").length
 
   return (
     <PageTransition>
-    <div className="stack-lg">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Leave Requests</h1>
-          <p className="text-base-content/70">Manage employee time-off requests</p>
+      <div className="stack-lg">
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">Leave Requests</h1>
+            <p className="page-subtitle">
+              {requests.length} request{requests.length !== 1 ? "s" : ""}
+              {pending > 0 && (
+                <span style={{ color: "var(--color-warning)", marginLeft: 6 }}>
+                  · {pending} pending
+                </span>
+              )}
+            </p>
+          </div>
+          <LeaveRequestForm employees={employees} leaveTypes={leaveTypes} />
         </div>
-        <LeaveRequestForm employees={employees} leaveTypes={leaveTypes} />
-      </div>
 
-      <LeaveTable initialRequests={requests} />
-    </div>
+        <LeaveTable initialRequests={requests} />
+      </div>
     </PageTransition>
   )
 }

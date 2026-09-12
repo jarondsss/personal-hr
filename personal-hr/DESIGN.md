@@ -1,129 +1,175 @@
-# Design System — Sky Blue & White (Modern Clean)
+# Design System — Axiom Dark (Premium)
 
 ## 1. Konsep
-Tema clean, modern, rounded, dengan dominasi warna sky blue dan white. Kesan profesional namun ringan, cocok untuk dashboard HR yang dipakai sehari-hari.
 
-## 2. Color Tokens (Tailwind v4 + DaisyUI v5 theme)
+Dark premium — warm zinc base dengan indigo primary. Referensi visual: Stripe, Notion, Linear.
+Kesan professional product, bukan developer-tool. Cocok untuk dashboard HR yang digunakan sehari-hari dengan feel yang modern dan tidak lelah di mata.
+
+---
+
+## 2. Color Tokens
 
 ```css
-@import "tailwindcss";
-@plugin "daisyui" {
-  themes: skyhr --default;
-}
+/* Surface Tiers */
+--color-background:   #0F0F11;   /* near-black warm */
+--color-surface:      #18181B;   /* zinc-900 */
+--color-elevated:     #232328;   /* zinc-800 elevated */
 
-@plugin "daisyui/theme" {
-  name: "skyhr";
-  default: true;
-  color-scheme: light;
+/* Borders */
+--color-border:       #27272A;   /* zinc-800 */
+--color-border-strong:#3F3F46;   /* zinc-700 */
 
-  --color-base-100: oklch(100% 0 0);          /* white */
-  --color-base-200: oklch(97% 0.01 230);       /* very light sky */
-  --color-base-300: oklch(93% 0.02 230);       /* light sky border */
-  --color-base-content: oklch(25% 0.02 240);   /* dark slate text */
+/* Text */
+--color-text-primary:   #FAFAFA;   /* near-white */
+--color-text-secondary: #A1A1AA;   /* zinc-400 */
+--color-text-muted:     #52525B;   /* zinc-600 */
 
-  --color-primary: oklch(70% 0.13 230);        /* sky blue */
-  --color-primary-content: oklch(100% 0 0);
+/* Brand — Indigo */
+--color-primary:         #6366F1;
+--color-primary-hover:   #818CF8;
+--color-primary-pressed: #4F46E5;
+--color-primary-soft:    rgba(99, 102, 241, 0.10);
+--color-primary-border:  rgba(99, 102, 241, 0.30);
 
-  --color-secondary: oklch(85% 0.06 220);      /* pale sky */
-  --color-secondary-content: oklch(25% 0.02 240);
-
-  --color-accent: oklch(75% 0.15 200);         /* cyan accent */
-  --color-accent-content: oklch(100% 0 0);
-
-  --color-neutral: oklch(30% 0.02 240);
-  --color-neutral-content: oklch(95% 0 0);
-
-  --color-info: oklch(75% 0.12 230);
-  --color-success: oklch(75% 0.15 150);
-  --color-warning: oklch(80% 0.15 80);
-  --color-error: oklch(65% 0.2 25);
-
-  --radius-box: 1.25rem;     /* rounded cards */
-  --radius-field: 0.75rem;   /* rounded inputs/buttons */
-  --radius-selector: 0.5rem;
-
-  --border: 1px;
-  --depth: 1;
-  --noise: 0;
-}
+/* Signals */
+--color-success:  #10B981;
+--color-warning:  #F59E0B;
+--color-info:     #38BDF8;
+--color-danger:   #EF4444;
 ```
 
 ### Palet Referensi
-| Token | Hex kira-kira | Penggunaan |
+| Token | Hex | Penggunaan |
 |---|---|---|
-| Primary (Sky Blue) | `#4FA8DB` | Tombol utama, header, highlight |
-| Primary Light | `#E6F4FB` | Background section, hover state |
-| White | `#FFFFFF` | Background utama, card |
-| Slate Text | `#1F2A37` | Teks utama |
-| Muted Text | `#6B7A8F` | Teks sekunder/caption |
-| Border | `#D9E8F2` | Border card, divider |
-| Success | `#34C77B` | Status approved/active |
-| Warning | `#F5B544` | Status pending |
-| Error | `#EF5A5A` | Status reject/overdue kontrak |
+| Background | `#0F0F11` | Background utama |
+| Surface | `#18181B` | Card, sidebar, modal |
+| Elevated | `#232328` | Hover state, elevated UI |
+| Primary (Indigo) | `#6366F1` | CTA, active state, accent |
+| Success (Emerald) | `#10B981` | Status approved, positive |
+| Warning (Amber) | `#F59E0B` | Status pending, warning |
+| Danger (Red) | `#EF4444` | Status rejected, destructive |
+| Info (Sky) | `#38BDF8` | Info state, view actions |
+
+---
 
 ## 3. Tipografi
-- **Font utama**: `Plus Jakarta Sans` atau `Inter` (sans-serif modern, rounded letterform)
-- **Heading**: semi-bold/bold, ukuran besar dengan letter-spacing sedikit rapat
-- **Body**: regular, line-height nyaman (1.6)
+
+- **Font**: `Inter` (variable, via Google Fonts)
+- **Font Mono**: `JetBrains Mono` (untuk kode, versi angka)
 
 ```css
---font-sans: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+--font-display: Inter, system-ui, sans-serif;
+--font-body:    Inter, system-ui, sans-serif;
+--font-mono:    "JetBrains Mono", monospace;
 ```
 
-Skala:
-- H1: 2rem / bold
-- H2: 1.5rem / semibold
-- H3: 1.25rem / semibold
-- Body: 0.95rem / regular
-- Caption: 0.8rem / medium, warna muted
+### Skala Teks
+| Class | Size | Weight | Tracking | Usage |
+|---|---|---|---|---|
+| `.t-headline-lg` | 2rem | 600 | -0.025em | Page titles |
+| `.t-headline-md` | 1.375rem | 600 | -0.018em | Section headings |
+| `.t-title-md` | 1rem | 600 | -0.01em | Card titles |
+| `.t-body-md` | 0.9375rem | 400 | -0.003em | Body text |
+| `.t-body-sm` | 0.8125rem | 400 | 0 | Secondary text |
+| `.t-label-sm` | 0.6875rem | 600 | 0.07em | Labels, table headers |
+
+---
 
 ## 4. Shape & Layout
-- **Rounded shape konsisten**: card `rounded-2xl`, button `rounded-xl`, input `rounded-lg`, avatar `rounded-full`
-- **Spacing**: generous padding (card padding `p-6`), gap antar elemen `gap-4`/`gap-6`
-- **Shadow**: soft shadow (`shadow-sm`/`shadow-md`), hindari shadow tajam — beri kesan "floating" lembut
-- **Border**: tipis (`border border-base-300`), gunakan warna sky pale, bukan abu-abu gelap
 
-## 5. Komponen Kunci (DaisyUI 5 based)
+```css
+--radius-xs:   4px;   /* chips, badges */
+--radius-sm:   8px;   /* cards, inputs, buttons */
+--radius-md:   10px;  /* modals, dropdowns */
+--radius-lg:   14px;  /* modal boxes */
+--radius-full: 9999px; /* avatars, pills */
+```
 
-### Sidebar
-- Background white, item aktif berlatar sky-light dengan teks primary, icon rounded
-- Logo + nama app di atas, collapsible
+- **Card padding**: `var(--space-6)` = 24px
+- **Gap antar elemen**: `var(--space-4)` = 16px
+- **Border**: `1px solid var(--color-border)` — tidak ada 2px border lagi
+- **Shadow**: sangat subtle — `0 1px 4px rgba(0,0,0,0.40)` saja
 
-### Card / Stat Widget
-- `card bg-base-100 shadow-sm rounded-2xl border border-base-300`
-- Stat angka besar bold, label kecil muted, icon bulat berwarna primary-light
+---
 
-### Table
-- Header sticky, background base-200, rounded di pojok atas
-- Row hover: `hover:bg-primary/5`
-- Status pakai `badge` rounded-full sesuai warna (success/warning/error/info)
+## 5. Komponen Kunci
 
-### Button
-- Primary: solid sky blue, `rounded-xl`, hover sedikit lebih gelap
-- Ghost/secondary: outline sky pale
-- Icon button: rounded-full untuk aksi cepat (edit/delete)
+### Page Header Pattern
+```jsx
+<div className="page-header">
+  <div>
+    <h1 className="page-title">Page Name</h1>
+    <p className="page-subtitle">Subtitle info</p>
+  </div>
+  <ActionButton />
+</div>
+```
 
-### Form/Input
-- `input input-bordered rounded-lg`, focus ring sky blue
-- Label di atas input, warna muted
+### Stat Tile
+- Top accent bar (2px, warna sesuai tone) menggantikan left-border
+- Value: font-display, 2.25rem, bold, tabular-nums
+- `data-tone="success|warning|info|danger"`
 
-### Modal/Drawer
-- Rounded-2xl, padding lega, header dengan judul + close icon rounded
+### Tables
+- Tidak ada `table-zebra` — hover effect: `rgba(255,255,255,0.02)`
+- Header: `.t-label-sm` style — uppercase, 0.6875rem, zinc-600
+- Status: `.chip` component dengan `data-tone`
 
-### Badge Status
-- Active/Approved → success
-- Pending → warning
-- Expired/Rejected → error
-- Info kontrak mendekati habis → warning dengan icon jam
+### Chips / Status Badge
+```jsx
+<span className="chip" data-tone="success|warning|info|danger|neutral">
+  STATUS
+</span>
+```
+- Uppercase, 0.6875rem, filled soft background + border
 
-## 6. Iconography
-Gunakan icon set rounded/outline (mis. Lucide React) — selaras dengan gaya rounded keseluruhan, ukuran konsisten 18–20px di tabel/list, 24px di header.
+### Modals
+```jsx
+<div style={{ position: "fixed", inset: 0, backdropFilter: "blur(4px)", backgroundColor: "rgba(9,9,11,0.75)" }}>
+  <div style={{ backgroundColor: "var(--color-surface)", border: "1px solid var(--color-border-strong)", borderRadius: "var(--radius-lg)", boxShadow: "0 24px 60px rgba(0,0,0,0.70)" }}>
+    ...
+  </div>
+</div>
+```
+- Tidak menggunakan DaisyUI `.modal` — custom implementation untuk full control
 
-## 7. Dark Mode (opsional, fase lanjut)
-Jika dibutuhkan, siapkan theme kedua `skyhr-dark` dengan base gelap slate dan primary sky blue tetap sebagai aksen terang.
+### Tabs (`.halo-tabs` + `.halo-tab`)
+- Container: `background: var(--color-elevated)`, `border: 1px solid var(--color-border)`, `padding: 3px`, `border-radius: var(--radius-sm)`
+- Active tab: `background: var(--color-surface)`, `box-shadow: var(--shadow-xs)`
+
+### Sidebar Nav (`.side-nav-link`)
+- Font: Inter (bukan mono) — product feel
+- Active: `background: var(--color-primary-soft)`, `border: 1px solid var(--color-primary-border)`
+- Icon aktif: `color: var(--color-primary-hover)`
+
+---
+
+## 6. Motion
+
+```css
+--motion-fast: 100ms;
+--motion-base: 160ms;
+--easing-standard: cubic-bezier(0.16, 1, 0.3, 1);
+```
+
+Prinsip: transisi cepat dan subtle. Tidak ada animasi yang mengganggu workflow operasional.
+
+---
+
+## 7. Action Buttons in Tables
+
+Ganti class-based buttons dengan inline style approach:
+- View: `color: var(--color-info)`, hover: `background: var(--color-info-soft)`
+- Edit: `color: var(--color-warning)`, hover: `background: var(--color-warning-soft)`
+- Delete: `color: var(--color-danger)`, hover: `background: var(--color-danger-soft)`
+
+---
 
 ## 8. Prinsip UX
-- Clean & tidak ramai: whitespace cukup, hindari border berlebihan
-- Konsistensi rounded di semua elemen interaktif
-- Status warna jelas dan mudah dipindai sekilas (scannable)
-- Mobile-friendly: sidebar jadi bottom-nav/drawer di layar kecil
+
+- **Whitespace generous** tapi efisien — tidak padding yang sia-sia
+- **Status selalu visible** via chip component yang consistent
+- **No zebra stripes** — hover row yang subtle lebih elegant
+- **Form labels**: selalu di atas input, `.label-text` class
+- **Mobile**: sidebar collapsible via drawer, mobile header sticky
+- **Accessibility**: focus rings via `--focus-ring` token, `prefers-reduced-motion` supported

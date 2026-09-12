@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { ADMIN_ROLE, getSession } from "@/lib/session";
-import { logout } from "./actions";
 import SidebarNav from "./SidebarNav";
+import SidebarUserFooter from "./SidebarUserFooter";
 
 export default async function DashboardLayout({
   children,
@@ -19,7 +19,6 @@ export default async function DashboardLayout({
     redirect("/forbidden");
   }
 
-  // Look up user info for the sidebar
   let user: { email: string | null; employee: { fullName: string } | null } | null = null;
   try {
     user = session.userId
@@ -45,38 +44,64 @@ export default async function DashboardLayout({
       <header
         className="flex lg:hidden items-center justify-between px-4"
         style={{
-          height: 56,
-          borderBottom: "2px solid var(--color-border-strong)",
+          height: 52,
+          borderBottom: "1px solid var(--color-border)",
           backgroundColor: "var(--color-surface)",
+          position: "sticky",
+          top: 0,
+          zIndex: 50,
         }}
       >
         <div className="flex items-center gap-3">
-          <label htmlFor="sidebar-drawer" className="flex items-center justify-center cursor-pointer" style={{ width: 36, height: 36 }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--color-text-secondary)" }}>
+          <label
+            htmlFor="sidebar-drawer"
+            className="flex items-center justify-center cursor-pointer"
+            style={{ width: 32, height: 32, borderRadius: "var(--radius-sm)" }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--color-text-secondary)" }}>
               <line x1="3" y1="6" x2="21" y2="6" />
               <line x1="3" y1="12" x2="21" y2="12" />
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </label>
           <div className="flex items-center gap-2">
-            <span
-              className="block"
+            <div
               style={{
-                width: 20, height: 20, borderRadius: 6,
-                background: "conic-gradient(from 220deg at 50% 50%, var(--color-primary), #1E2029 35%, #1E2029 65%, var(--color-primary))",
-                border: "1px solid var(--color-border-strong)",
+                width: 22,
+                height: 22,
+                borderRadius: 6,
+                background: "var(--color-primary)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
-            />
-            <span style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 15, color: "var(--color-text-primary)" }}>Personal HR</span>
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <span style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 14, letterSpacing: "-0.02em", color: "var(--color-text-primary)" }}>
+              Personal HR
+            </span>
           </div>
         </div>
         <div
-          className="flex items-center justify-center t-primary"
           style={{
-            width: 34, height: 34, borderRadius: "50%",
-            background: "conic-gradient(from 200deg, var(--color-primary), var(--color-info), var(--color-primary))",
-            border: "1px solid var(--color-border-strong)",
-            fontSize: 13, fontWeight: 600,
+            width: 30,
+            height: 30,
+            borderRadius: "var(--radius-sm)",
+            backgroundColor: "var(--color-primary-soft)",
+            border: "1px solid var(--color-primary-border)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 12,
+            fontWeight: 600,
+            color: "var(--color-primary-hover)",
+            fontFamily: "var(--font-display)",
           }}
         >
           {userInitial}
@@ -84,44 +109,57 @@ export default async function DashboardLayout({
       </header>
 
       <div className="flex">
-        {/* Sidebar — hidden on mobile via drawer */}
+        {/* Sidebar drawer checkbox */}
         <input type="checkbox" id="sidebar-drawer" className="hidden peer" />
 
-        {/* Overlay for mobile */}
+        {/* Mobile overlay */}
         <label
           htmlFor="sidebar-drawer"
-          className="fixed inset-0 z-30 bg-black/50 hidden peer-checked:block lg:hidden"
+          className="fixed inset-0 z-30 hidden peer-checked:block lg:hidden"
+          style={{ backgroundColor: "rgba(9,9,11,0.7)", backdropFilter: "blur(4px)" }}
         />
 
+        {/* Sidebar */}
         <aside
-          className="fixed lg:sticky top-0 z-40 lg:z-0 h-screen w-[240px] -translate-x-full peer-checked:translate-x-0 lg:translate-x-0 transition-transform duration-200 flex flex-col"
+          className="fixed lg:sticky top-0 z-40 lg:z-0 h-screen w-[228px] -translate-x-full peer-checked:translate-x-0 lg:translate-x-0 transition-transform duration-200 flex flex-col"
           style={{
-            backgroundColor: "var(--color-background)",
-            borderRight: "2px solid var(--color-border-strong)",
+            backgroundColor: "var(--color-surface)",
+            borderRight: "1px solid var(--color-border)",
           }}
         >
           {/* Brand */}
           <div
             className="flex items-center gap-3 px-5"
             style={{
-              height: 64,
-              borderBottom: "2px solid var(--color-border-strong)",
+              height: 56,
+              borderBottom: "1px solid var(--color-border)",
+              flexShrink: 0,
             }}
           >
-            <span
-              className="block flex-shrink-0"
+            <div
               style={{
-                width: 24, height: 24, borderRadius: 7,
-                background: "conic-gradient(from 220deg at 50% 50%, var(--color-primary), #1E2029 35%, #1E2029 65%, var(--color-primary))",
-                border: "1px solid var(--color-border-strong)",
-                boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.04)",
+                width: 26,
+                height: 26,
+                borderRadius: 7,
+                background: "var(--color-primary)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
               }}
-            />
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
             <div>
-              <div style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 15, letterSpacing: "-0.01em", color: "var(--color-text-primary)" }}>
+              <div style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 14, letterSpacing: "-0.02em", color: "var(--color-text-primary)", lineHeight: 1.2 }}>
                 Personal HR
               </div>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--color-text-muted)" }}>
+              <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--color-text-muted)", marginTop: 1 }}>
                 v0.1.0
               </div>
             </div>
@@ -131,40 +169,11 @@ export default async function DashboardLayout({
           <SidebarNav />
 
           {/* User footer */}
-          <div
-            className="mx-3 mb-4 p-3 flex items-center gap-3"
-            style={{
-              backgroundColor: "var(--color-elevated)",
-              border: "2px solid var(--color-border-strong)",
-              borderRadius: "var(--radius-sm)",
-            }}
-          >
-            <div
-              className="flex-shrink-0 flex items-center justify-center"
-              style={{
-                width: 36, height: 36, borderRadius: "var(--radius-sm)",
-                background: "conic-gradient(from 200deg, var(--color-primary), var(--color-info), var(--color-primary))",
-                border: "1.5px solid var(--color-border-strong)",
-                fontSize: 14, fontWeight: 600,
-                color: "var(--color-text-primary)",
-              }}
-            >
-              {userInitial}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="t-mono-sm" style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>{displayName}</div>
-              <div className="t-mono-sm t-muted" style={{ fontSize: 11 }}>{displayEmail}</div>
-            </div>
-            <form action={logout}>
-              <button type="submit" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-muted)", padding: 4, display: "flex" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                  <polyline points="16 17 21 12 16 7" />
-                  <line x1="21" y1="12" x2="9" y2="12" />
-                </svg>
-              </button>
-            </form>
-          </div>
+          <SidebarUserFooter
+            displayName={displayName}
+            displayEmail={displayEmail}
+            userInitial={userInitial}
+          />
         </aside>
 
         {/* Main content */}
@@ -177,4 +186,3 @@ export default async function DashboardLayout({
     </div>
   );
 }
-

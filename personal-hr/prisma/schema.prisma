@@ -29,6 +29,7 @@ model Employee {
   githubUsername        String?
   jobTitle              String
   status                String
+  isActive              Boolean                   @default(true)
   salary                Float
   salaryType            String
   joinDate              DateTime

@@ -17,29 +17,31 @@ export default async function PayrollPage() {
             taxStatus: true,
             bankName: true,
             bankAccount: true,
-            npwp: true
-          }
-        }
+            npwp: true,
+          },
+        },
       },
       orderBy: [
-        { year: 'desc' },
-        { month: 'desc' },
-        { employee: { fullName: 'asc' } }
-      ]
+        { year: "desc" },
+        { month: "desc" },
+        { employee: { fullName: "asc" } },
+      ],
     }),
-    prisma.companyProfile.findFirst()
+    prisma.companyProfile.findFirst(),
   ])
 
   return (
     <PageTransition>
-    <div className="stack-lg">
-      <div>
-        <h1 className="text-2xl font-bold">Payroll Management</h1>
-        <p className="text-base-content/70">Generate and manage employee salaries</p>
-      </div>
+      <div className="stack-lg">
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">Payroll Management</h1>
+            <p className="page-subtitle">Generate and manage employee salaries</p>
+          </div>
+        </div>
 
-      <PayrollTable payrolls={payrolls} companyProfile={companyProfile} />
-    </div>
+        <PayrollTable payrolls={payrolls} companyProfile={companyProfile} />
+      </div>
     </PageTransition>
   )
 }
