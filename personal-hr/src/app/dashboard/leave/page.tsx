@@ -6,10 +6,17 @@ import PageTransition from "@/components/PageTransition"
 export default async function LeavePage() {
   const [requests, employees, leaveTypes] = await Promise.all([
     prisma.leaveRequest.findMany({
-      include: { employee: true },
+      include: {
+        employee: {
+          select: { id: true, fullName: true, jobTitle: true },
+        },
+      },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.employee.findMany({ orderBy: { fullName: "asc" } }),
+    prisma.employee.findMany({
+      select: { id: true, fullName: true },
+      orderBy: { fullName: "asc" },
+    }),
     prisma.masterData.findMany({
       where: { category: "LEAVE_TYPE" },
       orderBy: { label: "asc" },

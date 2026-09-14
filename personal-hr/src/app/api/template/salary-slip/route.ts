@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import { getSession, isAdminSession } from '@/lib/session';
 
@@ -15,8 +15,8 @@ export async function GET() {
   }
 
   const filePath = path.join(process.cwd(), 'src/app/dashboard/payroll/template/12. Salary Slip.ods');
-  const fileBuffer = fs.readFileSync(filePath);
-  
+  const fileBuffer = await fs.readFile(filePath);
+
   return new NextResponse(fileBuffer, {
     headers: {
       'Content-Type': 'application/vnd.oasis.opendocument.spreadsheet',

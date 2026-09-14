@@ -41,17 +41,18 @@ export async function generatePayroll(formData: FormData) {
 
     // Get all employees
     const employees = await prisma.employee.findMany({
-      include: {
+      select: {
+        id: true,
+        salary: true,
+        salaryType: true,
+        taxStatus: true,
+        joinDate: true,
         leaveRequests: {
           where: {
             status: 'APPROVED',
             leaveType: 'UNPAID',
-            startDate: {
-              gte: monthStart,
-            },
-            endDate: {
-              lte: monthEnd
-            }
+            startDate: { gte: monthStart },
+            endDate: { lte: monthEnd }
           }
         }
       }
@@ -60,43 +61,31 @@ export async function generatePayroll(formData: FormData) {
     // Total hari kerja ideal dalam sebulan
     const WORKING_DAYS_MONTH = 22;
 
-    for (const emp of employees) {
+    const upserts = employees.map((emp) => {
       // 1. Get overtime pay from closed periods (already calculated)
       const overtimePay = overtimePayMap.get(emp.id) || 0
 
-      // 2. Base Date calculation (Full month view, e.g. Oct 1 - Oct 31)
-      const monthStart = new Date(year, month - 1, 1)
-      const monthEnd = new Date(year, month, 0)
-
       let basicSalary = emp.salary
 
-      // 3. Prorate for New Employees (Join Date logic)
+      // 2. Prorate for New Employees (Join Date logic)
       // Rumus: (Hari kerja dia / 22) * Gaji Pokok
       if (emp.joinDate > monthStart) {
         if (emp.joinDate > monthEnd) {
-          // Join date after this month ends, salary = 0
           basicSalary = 0
         } else {
-          // Calculate how many business days they actually worked from joinDate to end of month
-          // differenceInBusinessDays doesn't count the start day, so we add 1 if it's a weekday
           const actualWorkingDays = differenceInBusinessDays(monthEnd, emp.joinDate) + 1
-
-          // Apply prorate formula exactly as requested: (Hari kerja / 22) * Gaji
           basicSalary = (actualWorkingDays / WORKING_DAYS_MONTH) * emp.salary
         }
       }
 
-      // 4. Deduction for UNPAID leaves
+      // 3. Deduction for UNPAID leaves
       if (basicSalary > 0 && emp.leaveRequests.length > 0) {
         let totalUnpaidLeaveDays = 0;
         emp.leaveRequests.forEach(leave => {
-           totalUnpaidLeaveDays += differenceInBusinessDays(leave.endDate, leave.startDate) + 1
+          totalUnpaidLeaveDays += differenceInBusinessDays(leave.endDate, leave.startDate) + 1
         })
-
         const salaryPerDay = emp.salary / WORKING_DAYS_MONTH;
-        const unpaidDeduction = totalUnpaidLeaveDays * salaryPerDay;
-
-        basicSalary = Math.max(0, basicSalary - unpaidDeduction);
+        basicSalary = Math.max(0, basicSalary - totalUnpaidLeaveDays * salaryPerDay);
       }
 
       const grossSalary = basicSalary + overtimePay
@@ -108,33 +97,14 @@ export async function generatePayroll(formData: FormData) {
 
       const netSalary = grossSalary - deductions
 
-      // Upsert payroll record
-      await prisma.payroll.upsert({
-        where: {
-          employeeId_month_year: {
-            employeeId: emp.id,
-            month,
-            year
-          }
-        },
-        update: {
-          basicSalary,
-          overtimePay,
-          deductions,
-          netSalary,
-        },
-        create: {
-          employeeId: emp.id,
-          month,
-          year,
-          basicSalary,
-          overtimePay,
-          deductions,
-          netSalary,
-          status: 'DRAFT'
-        }
+      return prisma.payroll.upsert({
+        where: { employeeId_month_year: { employeeId: emp.id, month, year } },
+        update: { basicSalary, overtimePay, deductions, netSalary },
+        create: { employeeId: emp.id, month, year, basicSalary, overtimePay, deductions, netSalary, status: 'DRAFT' }
       })
-    }
+    })
+
+    await prisma.$transaction(upserts)
 
     revalidatePath("/dashboard/payroll")
     return { success: true }

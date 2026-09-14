@@ -1,21 +1,7 @@
 import prisma from "@/lib/prisma";
-import Link from "next/link";
-import AnalyticsTab from "./AnalyticsTab";
-import ReportsTab from "./ReportsTab";
-import DashboardTabs from "./DashboardTabs";
-import PageTransition from "@/components/PageTransition";
+import DashboardClient from "./DashboardClient";
 
-interface PageProps {
-  searchParams: Promise<{ tab?: string }>;
-}
-
-export default async function DashboardPage(props: PageProps) {
-  const searchParams = await props.searchParams;
-  const allowedTabs = new Set(["overview", "analytics", "reports"]);
-  const currentTab = searchParams.tab && allowedTabs.has(searchParams.tab)
-    ? searchParams.tab
-    : "overview";
-
+export default async function DashboardPage() {
   let employeeCount = 0;
   let activeProjects = 0;
   let pendingLeaves = 0;
@@ -26,6 +12,15 @@ export default async function DashboardPage(props: PageProps) {
     jobTitle: string;
     endContract: Date | null;
   }[] = [];
+  let analyticsEmployees: { salary: number; jobTitle: string; status: string }[] = [];
+  let analyticsProjects: { id: string; _count: { members: number } }[] = [];
+  let analyticsJobTitles: { value: string; label: string }[] = [];
+  let payrollMonths: {
+    month: number;
+    year: number;
+    _count: { id: number };
+    _sum: { basicSalary: number | null; overtimePay: number | null; deductions: number | null; netSalary: number | null };
+  }[] = [];
 
   try {
     [
@@ -34,6 +29,10 @@ export default async function DashboardPage(props: PageProps) {
       pendingLeaves,
       pendingOvertimes,
       expiringContracts,
+      analyticsEmployees,
+      analyticsProjects,
+      analyticsJobTitles,
+      payrollMonths,
     ] = await Promise.all([
       prisma.employee.count(),
       prisma.project.count(),
@@ -44,12 +43,29 @@ export default async function DashboardPage(props: PageProps) {
         select: { id: true, fullName: true, jobTitle: true, endContract: true },
         orderBy: { endContract: "asc" },
       }),
+      prisma.employee.findMany({
+        select: { salary: true, jobTitle: true, status: true },
+      }),
+      prisma.project.findMany({
+        select: { id: true, _count: { select: { members: true } } },
+      }),
+      prisma.masterData.findMany({
+        where: { category: "JOB_TITLE" },
+        select: { value: true, label: true },
+      }),
+      prisma.payroll.groupBy({
+        by: ["month", "year"],
+        _count: { id: true },
+        _sum: { basicSalary: true, overtimePay: true, deductions: true, netSalary: true },
+        orderBy: [{ year: "desc" }, { month: "desc" }],
+      }),
     ]);
   } catch (err) {
     console.error("Failed to load dashboard data:", err);
   }
 
-  const dbError = !expiringContracts.length && employeeCount === 0 && pendingLeaves === 0 && pendingOvertimes === 0;
+  const dbError =
+    !expiringContracts.length && employeeCount === 0 && pendingLeaves === 0 && pendingOvertimes === 0;
 
   const soonExpiring = expiringContracts.filter((e) => {
     if (!e.endContract) return false;
@@ -147,205 +163,17 @@ export default async function DashboardPage(props: PageProps) {
   ];
 
   return (
-    <PageTransition>
-      <div className="stack-lg">
-        {/* Page header */}
-        <div className="row-between" style={{ flexWrap: "wrap", gap: 16 }}>
-          <div className="stack-sm">
-            <h1 className="t-headline-lg">
-              Good morning, Admin
-            </h1>
-            <p className="t-body-sm">
-              {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-            </p>
-            {dbError && (
-              <span className="chip" data-tone="danger">
-                Database tidak terhubung
-              </span>
-            )}
-          </div>
-          <DashboardTabs currentTab={currentTab} />
-        </div>
-
-        {currentTab === "overview" && (
-          <>
-            {/* Stat row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {stats.map((stat) => (
-                <div key={stat.label} className="stat-tile" data-tone={stat.tone}>
-                  <div className="stat-head">
-                    <span className="stat-eyebrow">{stat.label}</span>
-                  </div>
-                  <div className="stat-value">{stat.value}</div>
-                  <div className="stat-meta">
-                    <span className="stat-foot">{stat.foot}</span>
-                    <Link href={stat.href} className="stat-foot-link">
-                      {stat.linkLabel}
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                        <polyline points="12 5 19 12 12 19" />
-                      </svg>
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Quick Actions */}
-            <div className="surface">
-              <div className="stack-sm">
-                <div className="row-between">
-                  <span className="t-title-md">Quick Actions</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3" style={{ marginTop: 4 }}>
-                  {quickActions.map((action) => (
-                    <Link key={action.href} href={action.href} className="quick-action-card">
-                      <div className="quick-action-icon">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                          {action.icon}
-                        </svg>
-                      </div>
-                      <div>
-                        <div className="qa-label">{action.label}</div>
-                        <div className="qa-desc">{action.desc}</div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Expiring Contracts */}
-            <div className="surface">
-              <div className="stack-sm">
-                <div className="row-between">
-                  <div className="stack-xs">
-                    <span className="t-title-md">Expiring Contracts</span>
-                    <span className="t-body-sm" style={{ color: "var(--color-text-muted)" }}>
-                      Contracts expiring within 30 days
-                    </span>
-                  </div>
-                  {soonExpiring.length > 0 && (
-                    <span
-                      className="chip"
-                      data-tone={
-                        soonExpiring.some(
-                          (e) =>
-                            e.endContract &&
-                            (new Date(e.endContract).getTime() - Date.now()) / (1000 * 60 * 60 * 24) <= 14
-                        )
-                          ? "danger"
-                          : "warning"
-                      }
-                    >
-                      {soonExpiring.length} contract{soonExpiring.length > 1 ? "s" : ""}
-                    </span>
-                  )}
-                </div>
-
-                {soonExpiring.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3" style={{ marginTop: 4 }}>
-                    {soonExpiring.map((emp) => {
-                      if (!emp.endContract) return null;
-                      const daysLeft = Math.ceil(
-                        (new Date(emp.endContract).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-                      );
-                      const urgent = daysLeft <= 14;
-                      const warning = daysLeft <= 30 && daysLeft > 14;
-                      return (
-                        <div
-                          key={emp.id}
-                          className="quick-action-card"
-                          data-tone={urgent ? "danger" : warning ? "warning" : undefined}
-                        >
-                          <div
-                            className="quick-action-icon"
-                            style={
-                              urgent
-                                ? { backgroundColor: "var(--color-danger-soft)", color: "var(--color-danger)" }
-                                : warning
-                                ? { backgroundColor: "var(--color-warning-soft)", color: "var(--color-warning)" }
-                                : undefined
-                            }
-                          >
-                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                              <circle cx="9" cy="7" r="4" />
-                            </svg>
-                          </div>
-                          <div className="stack-xs" style={{ flex: 1, minWidth: 0 }}>
-                            <div>
-                              <div className="qa-label" style={{ fontSize: 13 }}>{emp.fullName}</div>
-                              <div className="qa-desc" style={{ fontSize: 11, marginTop: 1 }}>
-                                {daysLeft > 0 ? (
-                                  <span style={{ color: urgent ? "var(--color-danger)" : "var(--color-warning)" }}>
-                                    {daysLeft} day{daysLeft !== 1 ? "s" : ""} remaining
-                                  </span>
-                                ) : (
-                                  <span style={{ color: "var(--color-danger)" }}>Expired</span>
-                                )}
-                              </div>
-                            </div>
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                              <Link
-                                href={`/dashboard/documents?employeeId=${emp.id}`}
-                                className="btn btn-xs btn-primary"
-                                style={{ fontSize: 11, height: 24, minHeight: 24, padding: "0 8px" }}
-                              >
-                                Document
-                              </Link>
-                              <Link
-                                href={`/dashboard/employees/${emp.id}/edit`}
-                                className="btn btn-xs btn-outline"
-                                style={{ fontSize: 11, height: 24, minHeight: 24, padding: "0 8px" }}
-                              >
-                                Edit
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div
-                    style={{
-                      padding: "24px 0",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: "var(--radius-sm)",
-                        backgroundColor: "var(--color-success-soft)",
-                        border: "1px solid var(--color-success-border)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    </div>
-                    <p className="t-body-sm" style={{ color: "var(--color-text-muted)" }}>
-                      No contracts expiring within 30 days.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-
-        {currentTab === "analytics" && <AnalyticsTab />}
-        {currentTab === "reports" && <ReportsTab />}
-      </div>
-    </PageTransition>
+    <DashboardClient
+      stats={stats}
+      quickActions={quickActions}
+      soonExpiring={soonExpiring}
+      dbError={dbError}
+      analytics={{
+        employees: analyticsEmployees,
+        projects: analyticsProjects,
+        jobTitleMap: analyticsJobTitles.map((d) => [d.value, d.label]),
+      }}
+      reports={{ payrollMonths }}
+    />
   );
 }

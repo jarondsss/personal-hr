@@ -6,10 +6,17 @@ import PageTransition from "@/components/PageTransition"
 export default async function OvertimePage() {
   const [requests, employees] = await Promise.all([
     prisma.overtimeRequest.findMany({
-      include: { employee: true },
+      include: {
+        employee: {
+          select: { id: true, fullName: true, jobTitle: true },
+        },
+      },
       orderBy: { date: "desc" },
     }),
-    prisma.employee.findMany({ orderBy: { fullName: "asc" } }),
+    prisma.employee.findMany({
+      select: { id: true, fullName: true },
+      orderBy: { fullName: "asc" },
+    }),
   ])
 
   const pending = requests.filter((r) => r.status === "PENDING").length

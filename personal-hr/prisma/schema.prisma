@@ -127,6 +127,9 @@ model LeaveRequest {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([status])
 }
 
 model OvertimeRequest {
@@ -141,6 +144,9 @@ model OvertimeRequest {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([status, date])
 }
 
 model OvertimePeriod {
@@ -185,6 +191,7 @@ model Payroll {
   employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@unique([employeeId, month, year])
+  @@index([month, year])
 }
 
 model DocumentTemplate {
