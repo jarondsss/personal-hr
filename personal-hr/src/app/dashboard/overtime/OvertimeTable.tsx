@@ -110,7 +110,7 @@ export default function OvertimeTable({ initialRequests }: { initialRequests: an
                         <button
                           onClick={() => setReqToProcess({ id: req.id, action: "APPROVED" })}
                           style={{
-                            padding: "4px 10px",
+                            padding: "8px 12px",
                             fontFamily: "var(--font-display)",
                             fontSize: "0.75rem",
                             fontWeight: 500,
@@ -126,7 +126,7 @@ export default function OvertimeTable({ initialRequests }: { initialRequests: an
                         <button
                           onClick={() => setReqToProcess({ id: req.id, action: "REJECTED" })}
                           style={{
-                            padding: "4px 10px",
+                            padding: "8px 12px",
                             fontFamily: "var(--font-display)",
                             fontSize: "0.75rem",
                             fontWeight: 500,

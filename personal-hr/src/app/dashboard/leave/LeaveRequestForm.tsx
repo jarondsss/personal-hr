@@ -66,7 +66,7 @@ export default function LeaveRequestForm({ employees, leaveTypes }: { employees:
               </select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold pl-1">Start Date</label>
                 <input type="date" name="startDate" className="input input-bordered w-full" required />

@@ -77,7 +77,7 @@ export default function LeaveTable({ initialRequests: requests }: { initialReque
                       <button
                         onClick={() => handleProcess(req.id, "APPROVED")}
                         style={{
-                          padding: "4px 10px",
+                          padding: "8px 12px",
                           fontFamily: "var(--font-display)",
                           fontSize: "0.75rem",
                           fontWeight: 500,
@@ -95,7 +95,7 @@ export default function LeaveTable({ initialRequests: requests }: { initialReque
                       <button
                         onClick={() => handleProcess(req.id, "REJECTED")}
                         style={{
-                          padding: "4px 10px",
+                          padding: "8px 12px",
                           fontFamily: "var(--font-display)",
                           fontSize: "0.75rem",
                           fontWeight: 500,

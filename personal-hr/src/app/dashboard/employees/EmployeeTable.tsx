@@ -209,7 +209,7 @@ export default function EmployeeTable({ employees: initialEmployees }: { employe
                       <button
                         onClick={() => setSelectedEmp(emp)}
                         style={{
-                          padding: "4px 10px",
+                          padding: "8px 12px",
                           fontFamily: "var(--font-display)",
                           fontSize: "0.75rem",
                           fontWeight: 500,
@@ -228,7 +228,7 @@ export default function EmployeeTable({ employees: initialEmployees }: { employe
                       <Link
                         href={`/dashboard/employees/${emp.id}/edit`}
                         style={{
-                          padding: "4px 10px",
+                          padding: "8px 12px",
                           fontFamily: "var(--font-display)",
                           fontSize: "0.75rem",
                           fontWeight: 500,
@@ -250,7 +250,7 @@ export default function EmployeeTable({ employees: initialEmployees }: { employe
                         disabled={togglingId === emp.id}
                         title={emp.isActive ? "Set Inactive" : "Set Active"}
                         style={{
-                          padding: "4px 10px",
+                          padding: "8px 12px",
                           fontFamily: "var(--font-display)",
                           fontSize: "0.75rem",
                           fontWeight: 500,
@@ -297,7 +297,7 @@ export default function EmployeeTable({ employees: initialEmployees }: { employe
                       <button
                         onClick={() => setEmpToDelete(emp)}
                         style={{
-                          padding: "4px 10px",
+                          padding: "8px 12px",
                           fontFamily: "var(--font-display)",
                           fontSize: "0.75rem",
                           fontWeight: 500,
@@ -418,7 +418,7 @@ export default function EmployeeTable({ employees: initialEmployees }: { employe
             {activeTab === "details" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                 {/* Info grid */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 20px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "12px 20px" }}>
                   {[
                     { label: "Full Name", value: selectedEmp.fullName },
                     { label: "Job Title", value: selectedEmp.jobTitleLabel || selectedEmp.jobTitle.replace(/_/g, " ") },
@@ -454,7 +454,7 @@ export default function EmployeeTable({ employees: initialEmployees }: { employe
                 <div style={{ height: 1, backgroundColor: "var(--color-border)" }} />
 
                 {/* Salary & contract */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 20px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "12px 20px" }}>
                   {[
                     { label: "Salary", value: <><span style={{ color: "var(--color-success)", fontWeight: 600 }}>{formatRupiah(selectedEmp.salary)}</span> <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>({selectedEmp.salaryType})</span></> },
                     { label: "Join Date", value: new Date(selectedEmp.joinDate).toLocaleDateString() },
@@ -503,13 +503,13 @@ export default function EmployeeTable({ employees: initialEmployees }: { employe
                   ) : (
                     <p style={{ fontSize: "0.8125rem", color: "var(--color-text-muted)", marginBottom: 12 }}>No skills submitted.</p>
                   )}
-                  <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                     <input
                       type="text"
                       className="input input-bordered"
                       placeholder="Add skill..."
                       value={newSkill}
-                      style={{ flex: 1, height: 34, fontSize: "0.875rem" }}
+                      style={{ flex: 1, minWidth: 120, height: 34, fontSize: "0.875rem" }}
                       onChange={(e) => setNewSkill(e.target.value)}
                       onKeyDown={async (e) => {
                         if (e.key === "Enter" && newSkill.trim()) {
