@@ -18,6 +18,7 @@ type ExpiringContract = {
   fullName: string
   jobTitle: string
   endContract: Date | null
+  isActive: boolean
 }
 
 type AnalyticsData = {
@@ -179,64 +180,90 @@ export default function DashboardClient({
                 </div>
 
                 {soonExpiring.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3" style={{ marginTop: 4 }}>
-                    {soonExpiring.map((emp) => {
+                  <div style={{ marginTop: 8, display: "flex", flexDirection: "column" }}>
+                    {soonExpiring.map((emp, idx) => {
                       if (!emp.endContract) return null
                       const daysLeft = Math.ceil(
                         (new Date(emp.endContract).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
                       )
                       const urgent = daysLeft <= 14
-                      const warning = daysLeft <= 30 && daysLeft > 14
+                      const accentColor = urgent ? "var(--color-danger)" : "var(--color-warning)"
+                      const endDateStr = new Date(emp.endContract).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
                       return (
                         <div
                           key={emp.id}
-                          className="quick-action-card"
-                          data-tone={urgent ? "danger" : warning ? "warning" : undefined}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 16,
+                            padding: "12px 0",
+                            borderBottom: idx < soonExpiring.length - 1 ? "1px solid var(--color-border)" : "none",
+                            position: "relative",
+                          }}
                         >
-                          <div
-                            className="quick-action-icon"
-                            style={
-                              urgent
-                                ? { backgroundColor: "var(--color-danger-soft)", color: "var(--color-danger)" }
-                                : warning
-                                ? { backgroundColor: "var(--color-warning-soft)", color: "var(--color-warning)" }
-                                : undefined
-                            }
-                          >
-                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                              <circle cx="9" cy="7" r="4" />
-                            </svg>
+                          {/* Urgency bar — carries state information, not decoration */}
+                          <div style={{
+                            width: 3,
+                            alignSelf: "stretch",
+                            borderRadius: 99,
+                            backgroundColor: accentColor,
+                            flexShrink: 0,
+                          }} />
+
+                          {/* Name + meta */}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--color-text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                              {emp.fullName}
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3 }}>
+                              <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Ends {endDateStr}</span>
+                              <span style={{ width: 3, height: 3, borderRadius: "50%", backgroundColor: "var(--color-text-muted)", flexShrink: 0 }} />
+                              <span style={{ fontSize: "0.75rem", fontWeight: 600, color: accentColor }}>
+                                {daysLeft > 0 ? `${daysLeft}d left` : "Expired"}
+                              </span>
+                            </div>
                           </div>
-                          <div className="stack-xs" style={{ flex: 1, minWidth: 0 }}>
-                            <div>
-                              <div className="qa-label" style={{ fontSize: 13 }}>{emp.fullName}</div>
-                              <div className="qa-desc" style={{ fontSize: 11, marginTop: 1 }}>
-                                {daysLeft > 0 ? (
-                                  <span style={{ color: urgent ? "var(--color-danger)" : "var(--color-warning)" }}>
-                                    {daysLeft} day{daysLeft !== 1 ? "s" : ""} remaining
-                                  </span>
-                                ) : (
-                                  <span style={{ color: "var(--color-danger)" }}>Expired</span>
-                                )}
-                              </div>
-                            </div>
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                              <Link
-                                href={`/dashboard/documents?employeeId=${emp.id}`}
-                                className="btn btn-xs btn-primary"
-                                style={{ fontSize: 11, height: 24, minHeight: 24, padding: "0 8px" }}
-                              >
-                                Document
-                              </Link>
-                              <Link
-                                href={`/dashboard/employees/${emp.id}/edit`}
-                                className="btn btn-xs btn-outline"
-                                style={{ fontSize: 11, height: 24, minHeight: 24, padding: "0 8px" }}
-                              >
-                                Edit
-                              </Link>
-                            </div>
+
+                          {/* Actions */}
+                          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                            <Link
+                              href={`/dashboard/documents?employeeId=${emp.id}`}
+                              style={{
+                                fontSize: "0.6875rem",
+                                fontWeight: 600,
+                                letterSpacing: "0.04em",
+                                textTransform: "uppercase",
+                                color: "var(--color-text-secondary)",
+                                textDecoration: "none",
+                                padding: "4px 8px",
+                                borderRadius: "var(--radius-xs)",
+                                border: "1px solid var(--color-border)",
+                                transition: "border-color 0.12s, color 0.12s",
+                              }}
+                              onMouseOver={(e) => { e.currentTarget.style.borderColor = accentColor; e.currentTarget.style.color = accentColor }}
+                              onMouseOut={(e) => { e.currentTarget.style.borderColor = "var(--color-border)"; e.currentTarget.style.color = "var(--color-text-secondary)" }}
+                            >
+                              Docs
+                            </Link>
+                            <Link
+                              href={`/dashboard/employees/${emp.id}/edit`}
+                              style={{
+                                fontSize: "0.6875rem",
+                                fontWeight: 600,
+                                letterSpacing: "0.04em",
+                                textTransform: "uppercase",
+                                color: "var(--color-text-secondary)",
+                                textDecoration: "none",
+                                padding: "4px 8px",
+                                borderRadius: "var(--radius-xs)",
+                                border: "1px solid var(--color-border)",
+                                transition: "border-color 0.12s, color 0.12s",
+                              }}
+                              onMouseOver={(e) => { e.currentTarget.style.borderColor = accentColor; e.currentTarget.style.color = accentColor }}
+                              onMouseOut={(e) => { e.currentTarget.style.borderColor = "var(--color-border)"; e.currentTarget.style.color = "var(--color-text-secondary)" }}
+                            >
+                              Edit
+                            </Link>
                           </div>
                         </div>
                       )

@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { deleteEmployee, deleteEmployees, deleteEmployeeSkill, addEmployeeSkill, toggleEmployeeStatus } from "./actions"
-import { Trash2, Plus } from "lucide-react"
+import { Trash2, Plus, Pencil, UserX, UserCheck, Loader2 } from "lucide-react"
 
 export default function EmployeeTable({ employees: initialEmployees }: { employees: any[] }) {
   const [employees, setEmployees] = useState(initialEmployees)
@@ -136,7 +136,7 @@ export default function EmployeeTable({ employees: initialEmployees }: { employe
         )}
 
         {/* Table */}
-        <div className="overflow-x-auto" style={{ minHeight: 460 }}>
+        <div className="overflow-x-auto">
           <table className="table w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--color-border)" }}>
@@ -164,7 +164,7 @@ export default function EmployeeTable({ employees: initialEmployees }: { employe
                   initial={{ opacity: 0, y: direction * 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
-                  style={{ borderBottom: "1px solid var(--color-border)" }}
+                  style={{ borderBottom: "1px solid var(--color-border)", height: 52 }}
                 >
                   <td style={{ paddingLeft: 20 }}>
                     <label className="check">
@@ -176,12 +176,17 @@ export default function EmployeeTable({ employees: initialEmployees }: { employe
                     </label>
                   </td>
                   <td>
-                    <div style={{ fontWeight: 500, fontSize: "0.9rem", color: "var(--color-text-primary)" }}>
-                      {emp.fullName}
-                    </div>
-                    <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", marginTop: 2 }}>
-                      {emp.email}
-                    </div>
+                    <button
+                      onClick={() => setSelectedEmp(emp)}
+                      style={{ background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left" }}
+                    >
+                      <div style={{ fontWeight: 500, fontSize: "0.9rem", color: "var(--color-text-primary)" }}>
+                        {emp.fullName}
+                      </div>
+                      <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", marginTop: 2 }}>
+                        {emp.email}
+                      </div>
+                    </button>
                   </td>
                   <td style={{ color: "var(--color-text-secondary)", fontSize: "0.875rem" }}>
                     {emp.jobTitleLabel || emp.jobTitle.replace(/_/g, " ")}
@@ -205,33 +210,12 @@ export default function EmployeeTable({ employees: initialEmployees }: { employe
                     {new Date(emp.joinDate).toLocaleDateString("id-ID", { dateStyle: "medium" })}
                   </td>
                   <td style={{ paddingRight: 20 }}>
-                    <div style={{ display: "flex", gap: 4, justifyContent: "flex-end", alignItems: "center" }}>
-                      <button
-                        onClick={() => setSelectedEmp(emp)}
-                        style={{
-                          padding: "8px 12px",
-                          fontFamily: "var(--font-display)",
-                          fontSize: "0.75rem",
-                          fontWeight: 500,
-                          color: "var(--color-info)",
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          borderRadius: "var(--radius-xs)",
-                          transition: "background-color 0.12s",
-                        }}
-                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "var(--color-info-soft)")}
-                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                      >
-                        View
-                      </button>
+                    <div style={{ display: "flex", gap: 2, justifyContent: "flex-end", alignItems: "center" }}>
                       <Link
                         href={`/dashboard/employees/${emp.id}/edit`}
+                        title="Edit"
                         style={{
-                          padding: "8px 12px",
-                          fontFamily: "var(--font-display)",
-                          fontSize: "0.75rem",
-                          fontWeight: 500,
+                          padding: 7,
                           color: "var(--color-warning)",
                           textDecoration: "none",
                           borderRadius: "var(--radius-xs)",
@@ -242,7 +226,7 @@ export default function EmployeeTable({ employees: initialEmployees }: { employe
                         onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "var(--color-warning-soft)")}
                         onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                       >
-                        Edit
+                        <Pencil size={15} />
                       </Link>
                       {/* Toggle Active/Inactive */}
                       <button
@@ -250,10 +234,7 @@ export default function EmployeeTable({ employees: initialEmployees }: { employe
                         disabled={togglingId === emp.id}
                         title={emp.isActive ? "Set Inactive" : "Set Active"}
                         style={{
-                          padding: "8px 12px",
-                          fontFamily: "var(--font-display)",
-                          fontSize: "0.75rem",
-                          fontWeight: 500,
+                          padding: 7,
                           color: emp.isActive ? "var(--color-warning)" : "var(--color-success)",
                           background: "none",
                           border: "none",
@@ -263,7 +244,6 @@ export default function EmployeeTable({ employees: initialEmployees }: { employe
                           opacity: togglingId === emp.id ? 0.6 : 1,
                           display: "inline-flex",
                           alignItems: "center",
-                          gap: 4,
                         }}
                         onMouseOver={(e) => {
                           if (togglingId !== emp.id) {
@@ -275,47 +255,40 @@ export default function EmployeeTable({ employees: initialEmployees }: { employe
                         onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                       >
                         {togglingId === emp.id ? (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: "spin 0.7s linear infinite" }}>
-                            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                          </svg>
+                          <Loader2 size={15} style={{ animation: "spin 0.7s linear infinite" }} />
                         ) : emp.isActive ? (
-                          <>
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                              <circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-                            </svg>
-                            Deactivate
-                          </>
+                          <UserX size={15} />
                         ) : (
-                          <>
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            Activate
-                          </>
+                          <UserCheck size={15} />
                         )}
                       </button>
                       <button
                         onClick={() => setEmpToDelete(emp)}
+                        title="Delete"
                         style={{
-                          padding: "8px 12px",
-                          fontFamily: "var(--font-display)",
-                          fontSize: "0.75rem",
-                          fontWeight: 500,
+                          padding: 7,
                           color: "var(--color-danger)",
                           background: "none",
                           border: "none",
                           cursor: "pointer",
                           borderRadius: "var(--radius-xs)",
                           transition: "background-color 0.12s",
+                          display: "inline-flex",
+                          alignItems: "center",
                         }}
                         onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "var(--color-danger-soft)")}
                         onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                       >
-                        Delete
+                        <Trash2 size={15} />
                       </button>
                     </div>
                   </td>
                 </motion.tr>
+              ))}
+              {Array.from({ length: pageSize - paginatedEmployees.length }).map((_, i) => (
+                <tr key={`empty-${i}`} style={{ borderBottom: "1px solid var(--color-border)", height: 52 }}>
+                  <td colSpan={7} />
+                </tr>
               ))}
             </tbody>
           </table>

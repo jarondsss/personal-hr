@@ -40,7 +40,7 @@ export default async function DashboardPage() {
       prisma.overtimeRequest.count({ where: { status: "PENDING" } }),
       prisma.employee.findMany({
         where: { endContract: { not: null } },
-        select: { id: true, fullName: true, jobTitle: true, endContract: true },
+        select: { id: true, fullName: true, jobTitle: true, endContract: true, isActive: true },
         orderBy: { endContract: "asc" },
       }),
       prisma.employee.findMany({
@@ -68,7 +68,7 @@ export default async function DashboardPage() {
     !expiringContracts.length && employeeCount === 0 && pendingLeaves === 0 && pendingOvertimes === 0;
 
   const soonExpiring = expiringContracts.filter((e) => {
-    if (!e.endContract) return false;
+    if (!e.endContract || !e.isActive) return false;
     const daysLeft = (new Date(e.endContract).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
     return daysLeft <= 30;
   });
