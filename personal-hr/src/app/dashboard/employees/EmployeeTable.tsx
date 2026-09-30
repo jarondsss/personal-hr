@@ -449,6 +449,25 @@ export default function EmployeeTable({ employees: initialEmployees }: { employe
 
                 <div style={{ height: 1, backgroundColor: "var(--color-border)" }} />
 
+                {/* Bank */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "12px 20px" }}>
+                  {[
+                    { label: "Bank Name", value: selectedEmp.bankName || "—" },
+                    { label: "Bank Account", value: selectedEmp.bankAccount || "—" },
+                  ].map((field) => (
+                    <div key={field.label}>
+                      <div style={{ fontFamily: "var(--font-display)", fontSize: "0.6875rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--color-text-muted)", marginBottom: 4 }}>
+                        {field.label}
+                      </div>
+                      <div style={{ fontFamily: "var(--font-body)", fontSize: "0.875rem", color: "var(--color-text-primary)" }}>
+                        {field.value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ height: 1, backgroundColor: "var(--color-border)" }} />
+
                 {/* Skills */}
                 <div>
                   <div style={{ fontFamily: "var(--font-display)", fontSize: "0.6875rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--color-text-muted)", marginBottom: 10 }}>
