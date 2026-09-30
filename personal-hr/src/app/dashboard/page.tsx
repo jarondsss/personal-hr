@@ -11,6 +11,7 @@ export default async function DashboardPage() {
     fullName: string;
     jobTitle: string;
     endContract: Date | null;
+    isActive: boolean;
   }[] = [];
   let analyticsEmployees: { salary: number; jobTitle: string; status: string }[] = [];
   let analyticsProjects: { id: string; _count: { members: number } }[] = [];
