@@ -4,24 +4,23 @@ import LeaveRequestForm from "./LeaveRequestForm"
 import PageTransition from "@/components/PageTransition"
 
 export default async function LeavePage() {
-  const [requests, employees, leaveTypes] = await Promise.all([
-    prisma.leaveRequest.findMany({
-      include: {
-        employee: {
-          select: { id: true, fullName: true, jobTitle: true },
-        },
+  // Sekuensial: pool koneksi DB terbatas (connection_limit=1)
+  const requests = await prisma.leaveRequest.findMany({
+    include: {
+      employee: {
+        select: { id: true, fullName: true, jobTitle: true },
       },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.employee.findMany({
-      select: { id: true, fullName: true },
-      orderBy: { fullName: "asc" },
-    }),
-    prisma.masterData.findMany({
-      where: { category: "LEAVE_TYPE" },
-      orderBy: { label: "asc" },
-    }),
-  ])
+    },
+    orderBy: { createdAt: "desc" },
+  })
+  const employees = await prisma.employee.findMany({
+    select: { id: true, fullName: true },
+    orderBy: { fullName: "asc" },
+  })
+  const leaveTypes = await prisma.masterData.findMany({
+    where: { category: "LEAVE_TYPE" },
+    orderBy: { label: "asc" },
+  })
 
   const pending = requests.filter((r) => r.status === "PENDING").length
 

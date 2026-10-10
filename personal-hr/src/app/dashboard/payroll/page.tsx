@@ -7,28 +7,27 @@ export const metadata = {
 }
 
 export default async function PayrollPage() {
-  const [payrolls, companyProfile] = await Promise.all([
-    prisma.payroll.findMany({
-      include: {
-        employee: {
-          select: {
-            fullName: true,
-            jobTitle: true,
-            taxStatus: true,
-            bankName: true,
-            bankAccount: true,
-            npwp: true,
-          },
+  // Sekuensial: pool koneksi DB terbatas (connection_limit=1)
+  const payrolls = await prisma.payroll.findMany({
+    include: {
+      employee: {
+        select: {
+          fullName: true,
+          jobTitle: true,
+          taxStatus: true,
+          bankName: true,
+          bankAccount: true,
+          npwp: true,
         },
       },
-      orderBy: [
-        { year: "desc" },
-        { month: "desc" },
-        { employee: { fullName: "asc" } },
-      ],
-    }),
-    prisma.companyProfile.findFirst(),
-  ])
+    },
+    orderBy: [
+      { year: "desc" },
+      { month: "desc" },
+      { employee: { fullName: "asc" } },
+    ],
+  })
+  const companyProfile = await prisma.companyProfile.findFirst()
 
   return (
     <PageTransition>

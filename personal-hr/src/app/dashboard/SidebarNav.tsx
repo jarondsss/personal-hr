@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { AnimatePresence, motion } from "framer-motion"
 
 const navItems = [
   {
@@ -126,7 +127,7 @@ const navItems = [
   },
 ]
 
-export default function SidebarNav() {
+export default function SidebarNav({ rail = false }: { rail?: boolean }) {
   const pathname = usePathname()
 
   const closeDrawer = () => {
@@ -135,36 +136,77 @@ export default function SidebarNav() {
   }
 
   return (
-    <nav className="flex-1 overflow-y-auto" style={{ padding: "12px 8px" }}>
-      <div className="side-nav-label" style={{ marginBottom: 4 }}>
-        Menu
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-        {navItems.map((item) => {
+    <nav
+      className="flex-1 overflow-y-auto overflow-x-hidden"
+      style={{ padding: rail ? "12px 10px" : "12px 8px" }}
+      aria-label="Dashboard navigation"
+    >
+      <AnimatePresence initial={false}>
+        {!rail && (
+          <motion.div
+            key="menu-label"
+            className="side-nav-label overflow-hidden"
+            style={{ marginBottom: 4, whiteSpace: "nowrap" }}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.16, ease: "easeOut" }}
+          >
+            Menu
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div style={{ display: "flex", flexDirection: "column", gap: rail ? 4 : 1 }}>
+        {navItems.map((item, i) => {
           const isActive =
             item.href === "/dashboard"
               ? pathname === "/dashboard"
               : pathname === item.href || pathname.startsWith(item.href + "/")
 
           return (
-            <Link
+            <motion.div
               key={item.href}
-              href={item.href}
-              className={`side-nav-link${isActive ? " is-active" : ""}`}
-              aria-current={isActive ? "page" : undefined}
-              onClick={closeDrawer}
+              initial={false}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.18, delay: rail ? 0 : i * 0.015 }}
             >
-              <span
-                style={{
-                  flexShrink: 0,
-                  color: isActive ? "var(--color-primary-hover)" : "var(--color-text-muted)",
-                  transition: "color 0.15s",
-                }}
+              <Link
+                href={item.href}
+                className={`side-nav-link${isActive ? " is-active" : ""}`}
+                aria-current={isActive ? "page" : undefined}
+                title={rail ? item.label : undefined}
+                aria-label={rail ? item.label : undefined}
+                onClick={closeDrawer}
+                style={rail ? { justifyContent: "center", padding: "10px 0" } : undefined}
               >
-                {item.icon}
-              </span>
-              {item.label}
-            </Link>
+                <motion.span
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 22 }}
+                  style={{
+                    flexShrink: 0,
+                    display: "flex",
+                    color: isActive ? "var(--color-primary-hover)" : "var(--color-text-muted)",
+                  }}
+                >
+                  {item.icon}
+                </motion.span>
+                <AnimatePresence initial={false}>
+                  {!rail && (
+                    <motion.span
+                      key={`label-${item.href}`}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
+                      style={{ whiteSpace: "nowrap", overflow: "hidden" }}
+                    >
+                      {item.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </Link>
+            </motion.div>
           )
         })}
       </div>

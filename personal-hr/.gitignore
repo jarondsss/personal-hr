@@ -24,6 +24,12 @@
 .DS_Store
 *.pem
 
+# local sqlite databases (may contain real HR data, changes on every run)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+
 # debug
 npm-debug.log*
 yarn-debug.log*

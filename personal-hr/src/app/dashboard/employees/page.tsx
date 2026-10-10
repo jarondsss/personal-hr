@@ -7,20 +7,19 @@ import EmployeeActions from "./EmployeeActions"
 import PageTransition from "@/components/PageTransition"
 
 export default async function EmployeesPage() {
-  const [employees, masterData, links, skillLinks] = await Promise.all([
-    prisma.employee.findMany({
-      include: {
-        leaveQuotas: true,
-        leaveRequests: { orderBy: { startDate: "desc" }, take: 20 },
-        overtimes: { orderBy: { date: "desc" }, take: 20 },
-        skills: { orderBy: { createdAt: "asc" } },
-      },
-      orderBy: { fullName: "asc" },
-    }),
-    prisma.masterData.findMany({ where: { category: "JOB_TITLE" } }),
-    prisma.onboardingLink.findMany({ orderBy: { createdAt: "desc" } }),
-    prisma.skillLink.findMany({ orderBy: { createdAt: "desc" } }),
-  ])
+  // Sekuensial: pool koneksi DB terbatas (connection_limit=1)
+  const employees = await prisma.employee.findMany({
+    include: {
+      leaveQuotas: true,
+      leaveRequests: { orderBy: { startDate: "desc" }, take: 20 },
+      overtimes: { orderBy: { date: "desc" }, take: 20 },
+      skills: { orderBy: { createdAt: "asc" } },
+    },
+    orderBy: { fullName: "asc" },
+  })
+  const masterData = await prisma.masterData.findMany({ where: { category: "JOB_TITLE" } })
+  const links = await prisma.onboardingLink.findMany({ orderBy: { createdAt: "desc" } })
+  const skillLinks = await prisma.skillLink.findMany({ orderBy: { createdAt: "desc" } })
 
   const jobTitleMap = new Map(masterData.map((d) => [d.value, d.label]))
 

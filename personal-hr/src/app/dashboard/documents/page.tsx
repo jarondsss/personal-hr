@@ -10,11 +10,10 @@ export const metadata = {
 
 export default async function DocumentsPage({ searchParams }: { searchParams: Promise<{ employeeId?: string }> }) {
   const { employeeId = "" } = await searchParams
-  const [employees, templates, companyProfile] = await Promise.all([
-    getEmployeesForDocument(),
-    getDocumentTemplates(),
-    prisma.companyProfile.findFirst()
-  ])
+  // Sekuensial: pool koneksi DB terbatas (connection_limit=1)
+  const employees = await getEmployeesForDocument()
+  const templates = await getDocumentTemplates()
+  const companyProfile = await prisma.companyProfile.findFirst()
 
   return (
     <PageTransition>
