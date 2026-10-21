@@ -47,6 +47,23 @@ function run(args, env) {
 }
 
 try {
+  // 0. Pre-flight: fail early with a message that says what is missing,
+  //    instead of a cryptic Prisma error halfway through the build.
+  const required = ["DATABASE_URL", "DIRECT_URL"];
+  const missing = required.filter((name) => !process.env[name]);
+  if (missing.length > 0) {
+    console.error(
+      `[schema] FAILED - missing environment variable(s): ${missing.join(", ")}`
+    );
+    console.error(
+      "[schema] Add them in Vercel -> Settings -> Environment Variables (Production scope),"
+    );
+    console.error(
+      "[schema] or run the build locally where .env is loaded automatically."
+    );
+    process.exit(1);
+  }
+
   // 1. Sync the schema. Fails on destructive changes instead of dropping data.
   run(["db", "push", "--schema", schemaPath, "--skip-generate"]);
 
