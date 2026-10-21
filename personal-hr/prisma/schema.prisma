@@ -15,6 +15,8 @@ model User {
   email     String    @unique
   password  String
   role      String    @default("EMPLOYEE")
+  /// bumped to invalidate every session issued before it (logout everywhere)
+  sessionVersion Int   @default(0)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   employee  Employee?

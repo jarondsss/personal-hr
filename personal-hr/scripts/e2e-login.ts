@@ -121,6 +121,38 @@ async function submit(fields: [string, string][], email: string, password: strin
     `${days.toFixed(3)} days`
   );
 
+  // 5. Revocation: bumping sessionVersion invalidates every issued cookie
+  await prisma.user.update({
+    where: { email: EMAIL },
+    data: { sessionVersion: { increment: 1 } },
+  });
+
+  const afterRevoke = await fetch(`${BASE}/dashboard`, {
+    headers: { cookie: `session=${token}` },
+    redirect: "manual",
+  });
+  check(
+    "revoked session cannot open the dashboard",
+    afterRevoke.status === 307 &&
+      (afterRevoke.headers.get("location") ?? "").includes("/login"),
+    `${afterRevoke.status} ${afterRevoke.headers.get("location")}`
+  );
+
+  // 6. Logging in again after a revocation works
+  const relogin = await submit(fields, EMAIL, PASSWORD);
+  const freshToken = (relogin.headers.get("set-cookie") ?? "").match(
+    /session=([^;]+)/
+  )?.[1];
+  const freshDash = await fetch(`${BASE}/dashboard`, {
+    headers: { cookie: `session=${freshToken}` },
+    redirect: "manual",
+  });
+  check(
+    "login after revocation works again",
+    freshDash.status === 200,
+    `${freshDash.status}`
+  );
+
   await prisma.user.deleteMany({ where: { email: EMAIL } });
   await prisma.loginAttempt.deleteMany({ where: { email: EMAIL } });
   console.log(`\n${failures === 0 ? "ALL CHECKS PASSED" : failures + " CHECK(S) FAILED"}`);

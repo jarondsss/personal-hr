@@ -32,6 +32,11 @@ export type SessionPayload = {
   userId: string;
   role: string;
   expiresAt: Date;
+  /**
+   * Version of the user's session counter. Bumping it on the server
+   * invalidates every token that was issued before.
+   */
+  sv: number;
 };
 
 export async function encrypt(payload: SessionPayload) {
@@ -39,6 +44,7 @@ export async function encrypt(payload: SessionPayload) {
     userId: payload.userId,
     role: payload.role,
     expiresAt: payload.expiresAt.toISOString(),
+    sv: payload.sv ?? 0,
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -60,6 +66,7 @@ export async function decrypt(session: string | undefined = ""): Promise<Session
       userId: String(payload.userId),
       role: String(payload.role ?? ""),
       expiresAt: new Date(payload.exp * 1000),
+      sv: Number(payload.sv ?? 0),
     };
   } catch (error) {
     return null;

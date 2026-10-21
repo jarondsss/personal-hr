@@ -3,9 +3,12 @@
  * Needs a running server: BASE_URL=http://localhost:3113 npm run test:session
  */
 import "dotenv/config";
+import bcrypt from "bcryptjs";
+import prisma from "../src/lib/prisma";
 import { decrypt, encrypt, SESSION_TTL_MS } from "../src/lib/auth/token";
 
 const BASE = process.env.BASE_URL || "http://localhost:3113";
+const EMAIL = "session-test@hr.local";
 
 let failures = 0;
 const check = (label: string, ok: boolean, extra = "") => {
@@ -26,7 +29,16 @@ async function hit(path: string, cookie?: string) {
 }
 
 (async () => {
-  const userId = "test-user-id";
+  // The session is verified against the database, so the user has to exist.
+  await prisma.user.deleteMany({ where: { email: EMAIL } });
+  const dbUser = await prisma.user.create({
+    data: {
+      email: EMAIL,
+      password: await bcrypt.hash("whatever", 10),
+      role: "ADMIN_HR",
+    },
+  });
+  const userId = dbUser.id;
   const role = "ADMIN_HR";
 
   // 1. No cookie -> protected route redirects to /login
@@ -39,7 +51,7 @@ async function hit(path: string, cookie?: string) {
 
   // 2. Valid session -> allowed, and the cookie is refreshed
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
-  const token = await encrypt({ userId, role, expiresAt });
+  const token = await encrypt({ userId, role, expiresAt, sv: 0 });
   const authed = await hit("/dashboard", `session=${token}`);
   check(
     "valid session -> /dashboard is served",
@@ -84,6 +96,7 @@ async function hit(path: string, cookie?: string) {
     userId,
     role,
     expiresAt: new Date(Date.now() - 1000),
+    sv: 0,
   });
   const expired = await hit("/dashboard", `session=${expiredToken}`);
   check(
@@ -113,6 +126,7 @@ async function hit(path: string, cookie?: string) {
     userId,
     role: "EMPLOYEE",
     expiresAt: new Date(Date.now() + SESSION_TTL_MS),
+    sv: 0,
   });
   const apiEmployee = await hit("/api/projects", `session=${employeeToken}`);
   check(
@@ -122,8 +136,12 @@ async function hit(path: string, cookie?: string) {
   );
 
   console.log(`\n${failures === 0 ? "ALL CHECKS PASSED" : failures + " CHECK(S) FAILED"}`);
+  await prisma.user.deleteMany({ where: { email: EMAIL } });
+  await prisma.$disconnect();
   process.exit(failures === 0 ? 0 : 1);
-})().catch((e) => {
+})().catch(async (e) => {
   console.error(e);
+  await prisma.user.deleteMany({ where: { email: EMAIL } });
+  await prisma.$disconnect();
   process.exit(1);
 });

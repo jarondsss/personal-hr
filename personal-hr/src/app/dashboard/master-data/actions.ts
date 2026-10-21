@@ -308,3 +308,25 @@ export async function deleteUser(userId: string) {
   }
 }
 
+/**
+ * Invalidates every session that was issued for this user (all devices).
+ * The user's session cookies keep a valid signature, but the version check
+ * rejects them, so the user has to log in again.
+ */
+export async function revokeUserSessions(userId: string) {
+  await getRequiredAdminSession()
+
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { sessionVersion: { increment: 1 } }
+    })
+
+    revalidatePath("/dashboard/master-data")
+    return { success: true }
+  } catch (error) {
+    console.error("Failed to revoke user sessions:", error)
+    return { error: "Failed to revoke sessions" }
+  }
+}
+

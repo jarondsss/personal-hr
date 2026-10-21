@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
-import { getSession, isAdminSession } from "@/lib/session"
+import { getVerifiedSession, isAdminSession } from "@/lib/session"
 
 function escapeCsv(value: string | number | null | undefined) {
   const raw = String(value ?? "")
@@ -9,7 +9,7 @@ function escapeCsv(value: string | number | null | undefined) {
 }
 
 export async function GET(req: Request) {
-  const session = await getSession()
+  const session = await getVerifiedSession()
   if (!session) {
     return new NextResponse("Unauthorized", { status: 401 })
   }

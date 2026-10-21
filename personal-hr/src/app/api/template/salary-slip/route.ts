@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
-import { getSession, isAdminSession } from '@/lib/session';
+import { getVerifiedSession, isAdminSession } from '@/lib/session';
 
 export async function GET() {
-  const session = await getSession();
+  const session = await getVerifiedSession();
 
   if (!session) {
     return new NextResponse('Unauthorized', { status: 401 });

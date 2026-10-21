@@ -123,9 +123,16 @@ bisa dibaca/diubah lewat `anon key` yang bersifat publik.
 5. Jangan pernah membuat policy `USING (true)` di schema `public`/`private`. Kalau butuh
    akses dari client via Supabase API, tetap di schema `private` dan tulis policy spesifik.
 6. `service_role` key hanya boleh dipakai di server. Tidak pernah masuk `NEXT_PUBLIC_*`.
-7. Rate limit login ada di `src/lib/rate-limit.ts` (5 gagal/email, 20 gagal/IP, jendela 15 menit,
-   catatan attempt disimpan di tabel `LoginAttempt`). Ubah angka batasnya di file itu,
-   lalu jalankan `npm run test:auth`.
+7. Rate limit login ada di `src/lib/rate-limit.ts` dengan **escalating backoff**:
+   - Per akun: 5 gagal → 15 menit, 10 gagal → 1 jam, 20 gagal → 24 jam.
+   - Per IP: 20 gagal → 15 menit, 50 gagal → 1 jam, 100 gagal → 24 jam.
+   - Hitungan gagal = kegagalan **sejak login sukses terakhir** ( jadi sukses me-reset
+     ladder), failure lama > 30 hari di-decrement, dan aturan IP memakai jendela 24 jam.
+   - Lock di-anchor ke kegagalan **terbaru**, jadi setiap kegagalan baru mendorong
+     waktu unlock lebih jauh.
+   - Baris `LoginAttempt` tidak dihapus saat sukses — itu audit trail. Counter yang
+     di-reset, bukan datanya.
+   - Ubah angka batasnya di `src/lib/rate-limit.ts`, lalu `npm run test:auth`.
 
 ### Endpoint login
 - `src/app/login/actions.ts` adalah server action tipis: ambil email/password/IP dari request,
@@ -136,7 +143,7 @@ bisa dibaca/diubah lewat `anon key` yang bersifat publik.
   (`DUMMY_HASH`) supaya response time tidak membocorkan email mana yang terdaftar.
 - Test: `npm run test:auth` (membuat user sementara, membersihkannya di akhir).
 
-### Session & proxy
+### Session, proxy & revocation
 - `src/proxy.ts` (bukan `middleware.ts` — Next 16 sudah rename, `middleware` deprecated)
   yang mengecek session sebelum route dilayani.
 - Semua crypto session ada di `src/lib/auth/token.ts` (**tanpa** import `next/headers`),
@@ -145,6 +152,12 @@ bisa dibaca/diubah lewat `anon key` yang bersifat publik.
   (detik sejak epoch) → token langsung expired. Selalu pakai `Date` atau string durasi.
 - Session TTL **1 hari** dengan sliding refresh: tiap request yang sah memperpanjang cookie.
   Aktif = selalu login, idle > 1 hari = harus login lagi.
+- **Revocation**: kolom `User.sessionVersion`. Token membawa `sv`; `getVerifiedSession()`
+  membandingkannya dengan nilai di DB. Kalau beda → session dianggap dicabut.
+  `revokeUserSessions(userId)` (tombol "Logout" di Master Data → User Accounts)
+  menaikkan `sessionVersion` → semua device user itu langsung logout.
+- `getSession()` (tanpa verifikasi DB) **jangan** dipakai untuk authorization.
+  Pakai `getVerifiedSession()` / `getRequiredAdminSession()`.
 - `proxy.ts` **tidak** mencakup `/api/*` (matcher-nya mengecualikan `api`), jadi setiap route
   handler wajib cek session + role sendiri. Jangan andalkan proxy untuk otorisasi API.
 

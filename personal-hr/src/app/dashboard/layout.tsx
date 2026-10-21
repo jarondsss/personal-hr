@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
-import { ADMIN_ROLE, getSession } from "@/lib/session";
+import { ADMIN_ROLE, getVerifiedSession } from "@/lib/session";
 import DashboardShell from "./DashboardShell";
 
 export default async function DashboardLayout({
@@ -8,7 +8,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
+  const session = await getVerifiedSession();
 
   if (!session) {
     redirect("/login");

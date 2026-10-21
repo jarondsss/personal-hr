@@ -7,7 +7,7 @@ import { findLockout, recordAttempt, pruneAttempts } from "../rate-limit";
 const DUMMY_HASH = "$2b$10$kW8RgyQsnRF4oMkHb3OhkuBa9iLwWHQNkOGpM/YW9R/16DUJk2JCu";
 
 export type AuthResult =
-  | { status: "ok"; user: { id: string; role: string } }
+  | { status: "ok"; user: { id: string; role: string; sessionVersion: number } }
   | { status: "invalid" }
   | { status: "locked"; retryAfterMinutes: number };
 
@@ -44,5 +44,12 @@ export async function authenticate(
   }
 
   await recordAttempt(email, ip, true);
-  return { status: "ok", user: { id: user.id, role: user.role } };
+  return {
+    status: "ok",
+    user: {
+      id: user.id,
+      role: user.role,
+      sessionVersion: user.sessionVersion,
+    },
+  };
 }

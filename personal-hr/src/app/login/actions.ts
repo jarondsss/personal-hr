@@ -31,6 +31,10 @@ export async function login(prevState: any, formData: FormData) {
     return { error: "Invalid credentials" };
   }
 
-  await createSession(result.user.id, result.user.role);
+  await createSession(
+    result.user.id,
+    result.user.role,
+    result.user.sessionVersion
+  );
   redirect("/dashboard");
 }

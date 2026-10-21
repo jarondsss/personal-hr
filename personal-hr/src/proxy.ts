@@ -31,6 +31,7 @@ export default async function proxy(req: NextRequest) {
       userId: session.userId,
       role: session.role,
       expiresAt,
+      sv: session.sv ?? 0,
     });
 
     res.cookies.set({

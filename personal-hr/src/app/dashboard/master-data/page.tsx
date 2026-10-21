@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { getMasterData, addMasterData, deleteMasterData, getCompanyProfile, updateCompanyProfile, uploadCompanyLogo, removeCompanyLogo, getUsers, createUser, updateUser, deleteUser } from "./actions"
+import { getMasterData, addMasterData, deleteMasterData, getCompanyProfile, updateCompanyProfile, uploadCompanyLogo, removeCompanyLogo, getUsers, createUser, updateUser, deleteUser, revokeUserSessions } from "./actions"
 
 const CATEGORIES = [
   { value: "JOB_TITLE", label: "Job Title" },
@@ -24,6 +24,7 @@ export default function MasterDataPage() {
   const [users, setUsers] = useState<any[]>([])
   const [employeesWithoutUser, setEmployeesWithoutUser] = useState<any[]>([])
   const [userError, setUserError] = useState<string | null>(null)
+  const [userNotice, setUserNotice] = useState<string | null>(null)
   const [selectedUser, setSelectedUser] = useState<any>(null)
   const [userToDelete, setUserToDelete] = useState<any>(null)
 
@@ -359,6 +360,18 @@ export default function MasterDataPage() {
           >
             <div className="p-6">
               <h2 className="t-title-md text-lg border-b border-[var(--color-border)] pb-2">User Accounts</h2>
+
+              {userNotice && (
+                <div className="alert alert-success mt-4 p-2 text-sm">
+                  <span>{userNotice}</span>
+                </div>
+              )}
+              {userError && (
+                <div className="alert alert-error mt-4 p-2 text-sm">
+                  <span>{userError}</span>
+                </div>
+              )}
+
               <div className="overflow-x-auto">
                 <table className="table table-sm">
                   <thead>
@@ -387,16 +400,36 @@ export default function MasterDataPage() {
                               onClick={() => {
                                 setSelectedUser(u)
                                 setUserError(null)
+                                setUserNotice(null)
                               }}
                             >
                               Edit
                             </label>
+                            <button
+                              type="button"
+                              className="btn btn-ghost btn-xs text-info cursor-pointer"
+                              onClick={async () => {
+                                if (!window.confirm(`Log out ${u.email} from all devices?`)) return
+                                setUserError(null)
+                                setUserNotice(null)
+                                const res = await revokeUserSessions(u.id)
+                                if (res?.error) {
+                                  setUserError(res.error)
+                                } else {
+                                  setUserNotice(`All sessions for ${u.email} were revoked.`)
+                                  refreshUsers()
+                                }
+                              }}
+                            >
+                              Logout
+                            </button>
                             <label
                               htmlFor="delete_user_modal"
                               className="btn btn-ghost btn-xs text-error cursor-pointer"
                               onClick={() => {
                                 setUserToDelete(u)
                                 setUserError(null)
+                                setUserNotice(null)
                               }}
                             >
                               Delete

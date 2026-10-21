@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import prisma from "./prisma";
 import {
   ADMIN_ROLE,
   SESSION_TTL_MS,
@@ -18,9 +19,13 @@ const COOKIE_OPTIONS = {
   path: "/",
 };
 
-export async function createSession(userId: string, role: string) {
+export async function createSession(
+  userId: string,
+  role: string,
+  sessionVersion = 0
+) {
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
-  const session = await encrypt({ userId, role, expiresAt });
+  const session = await encrypt({ userId, role, expiresAt, sv: sessionVersion });
 
   const cookieStore = await cookies();
   cookieStore.set(COOKIE_NAME, session, {
@@ -36,8 +41,28 @@ export async function getSession() {
   return await decrypt(session);
 }
 
-export async function getRequiredSession() {
+/**
+ * Session check that also honours revocations: if the user's session version
+ * was bumped (logout everywhere, or the account was disabled), the cookie is
+ * no longer accepted.
+ */
+export async function getVerifiedSession() {
   const session = await getSession();
+  if (!session?.userId) return null;
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { sessionVersion: true },
+  });
+
+  if (!user) return null;
+  if ((session.sv ?? 0) !== user.sessionVersion) return null;
+
+  return session;
+}
+
+export async function getRequiredSession() {
+  const session = await getVerifiedSession();
   if (!session?.userId) {
     throw new Error("Unauthorized");
   }
