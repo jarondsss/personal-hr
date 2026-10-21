@@ -191,6 +191,18 @@ butuh schema baru nggak akan pernah jalan di database yang belum punya schema it
 - Kalau deploy gagal dengan error "database is already in sync"/lock conflict (dua build
   jalan barengan), ulangi deploy-nya.
 
+### Index & Performance Advisor
+- `npm run db:index-report` — ngecek FK yang nggak punya index di kolom pertama, plus
+  statistik scan per index. Jalankan setelah menambah kolom/relasi.
+- Supabase Performance Advisor nge-flag **"Unindexed foreign keys"** kalau kolom FK
+  nggak punya index yang kolom itu jadi kolom **pertama**. Relasi `required` biasanya
+  udah dapet index dari Prisma, tapi kolom kedua dari `@@unique([a, b])` **nggak** —
+  itu yang paling sering kena flag.
+- Saran **"Unused Index"** di app iniBiasanya false positive: `idx_scan = 0` karena
+  tabelnya masih 0–48 baris, jadi Postgres milih seq scan. **Jangan** drop index
+  itu — begitu data nambah, index itu yang nyelametin. Hapus cuma kalau query-nya
+  emang nggak pernah pakai kolom itu.
+
 ## Larangan
 - Jangan gunakan `tailwind.config.js` versi lama — Tailwind v4 pakai CSS-based config.
 - Jangan simpan password/secret di kode atau commit.

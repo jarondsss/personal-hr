@@ -98,6 +98,7 @@ model ProjectMember {
   project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([employeeId, projectId])
+  @@index([projectId])
   @@schema("private")
 }
 
@@ -188,6 +189,7 @@ model OvertimePeriodSummary {
   employee   Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@unique([periodId, employeeId])
+  @@index([employeeId])
   @@schema("private")
 }
 
@@ -250,6 +252,7 @@ model SkillLink {
   isUsed     Boolean  @default(false)
   createdAt  DateTime @default(now())
   employee   Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  @@index([employeeId])
   @@schema("private")
 }
 

@@ -12,6 +12,7 @@
     "db:lockdown": "prisma db execute --file prisma/rls-lockdown.sql --schema prisma/schema.prisma",
     "db:check": "node prisma/rls-check.js",
     "db:backup": "node prisma/backup.js private",
+    "db:index-report": "node prisma/index-report.js",
     "test:auth": "tsx scripts/test-auth.ts",
     "test:session": "tsx scripts/test-session.ts",
     "test:e2e": "tsx scripts/e2e-login.ts"
