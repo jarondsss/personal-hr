@@ -170,6 +170,27 @@ npm run test:e2e       # login form beneran -> cookie -> dashboard (butuh server
 Untuk dua yang terakhir: `npm run build` lalu `npx next start -p 3113` di terminal lain,
 lalu `BASE_URL=http://localhost:3113 npm run test:session`.
 
+## Pipeline Database (WAJIB)
+
+`npm run build` = `prisma generate` → **apply schema + lockdown + verifikasi** → `next build`.
+Scriptnya `scripts/deploy-schema.js`:
+
+1. `prisma db push` — sync schema. Kalau butuh drop kolom/tabel → **gagal**, build dibatalkan
+   (data nggak dibrak diam-diam).
+2. `prisma db execute --file prisma/rls-lockdown.sql` — RLS + revoke grant diulang.
+3. `node prisma/rls-check.js` — verifikasi. Kalau ada yang nggak aman → build gagal.
+
+Artinya: **lu nggak bisa lupa jalanin `db:lockdown`** lagi, karena otomatis. Dan kode yang
+butuh schema baru nggak akan pernah jalan di database yang belum punya schema itu.
+
+- Build Vercel **Preview/Development** di-skip (`VERCEL_ENV`), biar preview build nggak
+  ngedump Production DB. Hanya `VERCEL_ENV=production` yang apply.
+- `SKIP_SCHEMA=1 npm run build` untuk build offline / tanpa akses DB.
+- Credential cuma lewat environment, **nggak pernah** di command line (biar nggak bocor ke log).
+- Manual: `npm run db:push` lalu `npm run db:lockdown` lalu `npm run db:check`.
+- Kalau deploy gagal dengan error "database is already in sync"/lock conflict (dua build
+  jalan barengan), ulangi deploy-nya.
+
 ## Larangan
 - Jangan gunakan `tailwind.config.js` versi lama — Tailwind v4 pakai CSS-based config.
 - Jangan simpan password/secret di kode atau commit.
