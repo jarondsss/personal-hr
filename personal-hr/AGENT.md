@@ -136,6 +136,27 @@ bisa dibaca/diubah lewat `anon key` yang bersifat publik.
   (`DUMMY_HASH`) supaya response time tidak membocorkan email mana yang terdaftar.
 - Test: `npm run test:auth` (membuat user sementara, membersihkannya di akhir).
 
+### Session & proxy
+- `src/proxy.ts` (bukan `middleware.ts` — Next 16 sudah rename, `middleware` deprecated)
+  yang mengecek session sebelum route dilayani.
+- Semua crypto session ada di `src/lib/auth/token.ts` (**tanpa** import `next/headers`),
+  supaya bisa dipakai di `proxy.ts`. `src/lib/session.ts` hanya thinly wrap `cookies()`.
+- `jose`! Penting: `setExpirationTime()` dengan **angka** dibaca sebagai NumericDate absolut
+  (detik sejak epoch) → token langsung expired. Selalu pakai `Date` atau string durasi.
+- Session TTL **1 hari** dengan sliding refresh: tiap request yang sah memperpanjang cookie.
+  Aktif = selalu login, idle > 1 hari = harus login lagi.
+- `proxy.ts` **tidak** mencakup `/api/*` (matcher-nya mengecualikan `api`), jadi setiap route
+  handler wajib cek session + role sendiri. Jangan andalkan proxy untuk otorisasi API.
+
+### Test commands
+```bash
+npm run test:auth      # logika auth + rate limit (butuh DB, tanpa server)
+npm run test:session   # proxy + cookie (butuh server jalan di BASE_URL)
+npm run test:e2e       # login form beneran -> cookie -> dashboard (butuh server jalan)
+```
+Untuk dua yang terakhir: `npm run build` lalu `npx next start -p 3113` di terminal lain,
+lalu `BASE_URL=http://localhost:3113 npm run test:session`.
+
 ## Larangan
 - Jangan gunakan `tailwind.config.js` versi lama — Tailwind v4 pakai CSS-based config.
 - Jangan simpan password/secret di kode atau commit.
