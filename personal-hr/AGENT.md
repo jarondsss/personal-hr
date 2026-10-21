@@ -95,7 +95,49 @@ Rujuk `PROJECT_SCOPE.md` untuk detail modul & data field, dan `DESIGN.md` untuk 
 - [ ] Komponen reusable ditaruh di `/components/ui`, bukan duplikasi
 - [ ] Query Prisma efisien (hindari N+1, gunakan `include`/`select` secukupnya)
 
+## Keamanan Database (WAJIB dibaca sebelum migrasi)
+
+Aplikasi ini **tidak** memakai Supabase Auth/PostgREST/supabase-js. Semua query lewat Prisma
+dengan role `postgres` (BYPASSRLS). Supabase secara default memberi grant `ALL` ke role
+`anon`/`authenticated` untuk setiap tabel di schema `public`, jadi tanpa RLS semua data HR
+bisa dibaca/diubah lewat `anon key` yang bersifat publik.
+
+### Kondisi sekarang
+- Semua tabel aplikasi ada di schema **`private`** (bukan `public`). PostgREST hanya
+  expose `public`, jadi nama tabel dan datanya **tidak terlihat** dari API publik —
+  balasan untuk `anon` adalah `42P01 relation does not exist`, bukan sekadar `permission denied`.
+- Semua tabel punya **RLS enabled tanpa policy** (default deny) + grant `anon`/`authenticated` dicabut.
+- `schema.prisma` memakai preview feature `multiSchema`; setiap model wajib punya `@@schema("private")`.
+- Raw SQL wajib di-schema-qualify: `SELECT * FROM "private"."Employee"`, bukan `FROM "Employee"`.
+
+### Aturan
+1. Model baru di `schema.prisma` **wajib** ditulis dengan `@@schema("private")`.
+2. Setiap selesai `prisma db push` / `prisma migrate`, **wajib** jalankan:
+   ```bash
+   npm run db:lockdown
+   ```
+   (file: `prisma/rls-lockdown.sql` — meng-enable RLS, mencabut grant `anon`/`authenticated`,
+   dan mengatur `ALTER DEFAULT PRIVILEGES` supaya tabel baru tidak otomatis terbuka lagi).
+3. Verifikasi dengan `npm run db:check` — semua baris harus `PASS`.
+4. Sebelum migrasi berisiko, backup dulu: `npm run db:backup` (dump JSON ke `prisma/backups/`).
+5. Jangan pernah membuat policy `USING (true)` di schema `public`/`private`. Kalau butuh
+   akses dari client via Supabase API, tetap di schema `private` dan tulis policy spesifik.
+6. `service_role` key hanya boleh dipakai di server. Tidak pernah masuk `NEXT_PUBLIC_*`.
+7. Rate limit login ada di `src/lib/rate-limit.ts` (5 gagal/email, 20 gagal/IP, jendela 15 menit,
+   catatan attempt disimpan di tabel `LoginAttempt`). Ubah angka batasnya di file itu,
+   lalu jalankan `npm run test:auth`.
+
+### Endpoint login
+- `src/app/login/actions.ts` adalah server action tipis: ambil email/password/IP dari request,
+  panggil `authenticate()` dari `src/lib/auth/authenticate.ts`, lalu buat session + redirect.
+- `authenticate()` **tidak boleh** memakai API request Next.js (`headers()`, `cookies()`)
+  supaya tetap bisa di-unit-test. Semua logika auth harus di situ.
+- Kalau email tidak terdaftar, `bcrypt.compare` tetap dijalankan terhadap hash palsu
+  (`DUMMY_HASH`) supaya response time tidak membocorkan email mana yang terdaftar.
+- Test: `npm run test:auth` (membuat user sementara, membersihkannya di akhir).
+
 ## Larangan
 - Jangan gunakan `tailwind.config.js` versi lama — Tailwind v4 pakai CSS-based config.
 - Jangan simpan password/secret di kode atau commit.
 - Jangan buat logic kalkulasi gaji/pajak langsung di komponen React — pisahkan ke `/lib/utils` agar testable.
+- Jangan bikin file session baru dengan fallback secret hardcoded — cukup pakai `src/lib/session.ts`.

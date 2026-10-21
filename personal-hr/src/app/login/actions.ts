@@ -1,34 +1,36 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
-import { createSession } from "@/lib/session";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { authenticate } from "@/lib/auth/authenticate";
+import { createSession } from "@/lib/session";
 
-const prisma = new PrismaClient();
+async function getClientIp() {
+  const h = await headers();
+  const forwarded = h.get("x-forwarded-for");
+  return forwarded?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
+}
 
 export async function login(prevState: any, formData: FormData) {
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
+  const email = ((formData.get("email") as string) || "").trim();
+  const password = (formData.get("password") as string) || "";
 
   if (!email || !password) {
     return { error: "Email and password are required" };
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email },
-  });
+  const result = await authenticate(email, password, await getClientIp());
 
-  if (!user) {
+  if (result.status === "locked") {
+    return {
+      error: `Terlalu banyak percobaan login. Coba lagi dalam ${result.retryAfterMinutes} menit.`,
+    };
+  }
+
+  if (result.status === "invalid") {
     return { error: "Invalid credentials" };
   }
 
-  const isPasswordValid = await bcrypt.compare(password, user.password);
-
-  if (!isPasswordValid) {
-    return { error: "Invalid credentials" };
-  }
-
-  await createSession(user.id, user.role);
+  await createSession(result.user.id, result.user.role);
   redirect("/dashboard");
 }

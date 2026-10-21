@@ -7,11 +7,14 @@
     "build": "prisma generate && next build",
     "postinstall": "prisma generate",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:lockdown": "prisma db execute --file prisma/rls-lockdown.sql --schema prisma/schema.prisma",
+    "db:check": "node prisma/rls-check.js",
+    "db:backup": "node prisma/backup.js private",
+    "test:auth": "tsx scripts/test-auth.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
-    "@supabase/supabase-js": "^2.110.5",
     "bcryptjs": "^3.0.3",
     "daisyui": "^5.0.0-beta.8",
     "date-fns": "^4.4.0",

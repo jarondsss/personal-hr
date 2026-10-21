@@ -1,11 +1,13 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+  schemas   = ["public", "private"]
 }
 
 model User {
@@ -16,6 +18,7 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   employee  Employee?
+  @@schema("private")
 }
 
 model Employee {
@@ -55,6 +58,7 @@ model Employee {
   projectMembers        ProjectMember[]
   skills                EmployeeSkill[]
   skillLinks            SkillLink[]
+  @@schema("private")
 }
 
 model EmployeeSkill {
@@ -67,6 +71,7 @@ model EmployeeSkill {
   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@index([employeeId])
+  @@schema("private")
 }
 
 model Project {
@@ -77,6 +82,7 @@ model Project {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
   members     ProjectMember[]
+  @@schema("private")
 }
 
 model ProjectMember {
@@ -90,6 +96,7 @@ model ProjectMember {
   project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([employeeId, projectId])
+  @@schema("private")
 }
 
 model MasterData {
@@ -102,6 +109,7 @@ model MasterData {
   metadata  String?
 
   @@unique([category, value])
+  @@schema("private")
 }
 
 model LeaveQuota {
@@ -114,6 +122,7 @@ model LeaveQuota {
   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@unique([employeeId, leaveType, year])
+  @@schema("private")
 }
 
 model LeaveRequest {
@@ -130,6 +139,7 @@ model LeaveRequest {
 
   @@index([employeeId])
   @@index([status])
+  @@schema("private")
 }
 
 model OvertimeRequest {
@@ -147,6 +157,7 @@ model OvertimeRequest {
 
   @@index([employeeId])
   @@index([status, date])
+  @@schema("private")
 }
 
 model OvertimePeriod {
@@ -160,6 +171,7 @@ model OvertimePeriod {
   summaries   OvertimePeriodSummary[]
 
   @@unique([periodStart, periodEnd])
+  @@schema("private")
 }
 
 model OvertimePeriodSummary {
@@ -174,6 +186,7 @@ model OvertimePeriodSummary {
   employee   Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@unique([periodId, employeeId])
+  @@schema("private")
 }
 
 model Payroll {
@@ -192,6 +205,7 @@ model Payroll {
 
   @@unique([employeeId, month, year])
   @@index([month, year])
+  @@schema("private")
 }
 
 model DocumentTemplate {
@@ -200,6 +214,7 @@ model DocumentTemplate {
   fileName  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  @@schema("private")
 }
 
 model CompanyProfile {
@@ -211,6 +226,7 @@ model CompanyProfile {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   logoUrl     String?
+  @@schema("private")
 }
 
 model OnboardingLink {
@@ -220,6 +236,7 @@ model OnboardingLink {
   name      String
   isUsed    Boolean  @default(false)
   createdAt DateTime @default(now())
+  @@schema("private")
 }
 
 model SkillLink {
@@ -231,4 +248,19 @@ model SkillLink {
   isUsed     Boolean  @default(false)
   createdAt  DateTime @default(now())
   employee   Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  @@schema("private")
+}
+
+/// Login attempt log — dipakai untuk rate limiting / lockout brute force login.
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  ip        String
+  success   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ip, createdAt])
+  @@index([createdAt])
+  @@schema("private")
 }
