@@ -1,26 +1,24 @@
 import prisma from "@/lib/prisma"
+import { getCachedActiveEmployees, getCachedMasterData } from "@/lib/cache"
 import LeaveTable from "./LeaveTable"
 import LeaveRequestForm from "./LeaveRequestForm"
 import PageTransition from "@/components/PageTransition"
 
 export default async function LeavePage() {
-  // Sekuensial: pool koneksi DB terbatas (connection_limit=1)
-  const requests = await prisma.leaveRequest.findMany({
-    include: {
-      employee: {
-        select: { id: true, fullName: true, jobTitle: true },
+  // Parallel queries - fetch recent leave requests only + cached data
+  const [requests, employees, leaveTypes] = await Promise.all([
+    prisma.leaveRequest.findMany({
+      include: {
+        employee: {
+          select: { id: true, fullName: true, jobTitle: true },
+        },
       },
-    },
-    orderBy: { createdAt: "desc" },
-  })
-  const employees = await prisma.employee.findMany({
-    select: { id: true, fullName: true },
-    orderBy: { fullName: "asc" },
-  })
-  const leaveTypes = await prisma.masterData.findMany({
-    where: { category: "LEAVE_TYPE" },
-    orderBy: { label: "asc" },
-  })
+      orderBy: { createdAt: "desc" },
+      take: 500, // Reasonable limit
+    }),
+    getCachedActiveEmployees(), // Cached for 5 minutes
+    getCachedMasterData('LEAVE_TYPE'), // Cached for 1 hour
+  ]);
 
   const pending = requests.filter((r) => r.status === "PENDING").length
 

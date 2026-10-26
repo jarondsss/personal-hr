@@ -142,6 +142,8 @@ model LeaveRequest {
 
   @@index([employeeId])
   @@index([status])
+  @@index([employeeId, status])
+  @@index([status, startDate])
   @@schema("private")
 }
 
@@ -160,6 +162,8 @@ model OvertimeRequest {
 
   @@index([employeeId])
   @@index([status, date])
+  @@index([employeeId, status])
+  @@index([employeeId, date])
   @@schema("private")
 }
 
@@ -209,6 +213,8 @@ model Payroll {
 
   @@unique([employeeId, month, year])
   @@index([month, year])
+  @@index([year, month, status])
+  @@index([employeeId, year, month])
   @@schema("private")
 }
 

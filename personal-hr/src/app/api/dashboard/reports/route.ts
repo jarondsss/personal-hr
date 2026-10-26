@@ -26,9 +26,12 @@ export async function GET(req: Request) {
     return new NextResponse("Bad Request: month and year are required", { status: 400 })
   }
 
-  // Get payroll for the specified month and year
+  // Optimized query - use composite index and minimal select
   const payrolls = await prisma.payroll.findMany({
-    where: { month, year },
+    where: { 
+      year,
+      month,
+    },
     select: {
       basicSalary: true,
       overtimePay: true,
@@ -46,6 +49,9 @@ export async function GET(req: Request) {
           bankAccount: true,
         },
       },
+    },
+    orderBy: {
+      employee: { fullName: 'asc' },
     },
   })
 

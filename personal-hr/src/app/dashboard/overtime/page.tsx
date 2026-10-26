@@ -1,22 +1,23 @@
 import prisma from "@/lib/prisma"
+import { getCachedActiveEmployees } from "@/lib/cache"
 import OvertimeTable from "./OvertimeTable"
 import OvertimeRequestForm from "./OvertimeRequestForm"
 import PageTransition from "@/components/PageTransition"
 
 export default async function OvertimePage() {
-  // Sekuensial: pool koneksi DB terbatas (connection_limit=1)
-  const requests = await prisma.overtimeRequest.findMany({
-    include: {
-      employee: {
-        select: { id: true, fullName: true, jobTitle: true },
+  // Parallel queries - fetch recent overtime requests only + cached employees
+  const [requests, employees] = await Promise.all([
+    prisma.overtimeRequest.findMany({
+      include: {
+        employee: {
+          select: { id: true, fullName: true, jobTitle: true },
+        },
       },
-    },
-    orderBy: { date: "desc" },
-  })
-  const employees = await prisma.employee.findMany({
-    select: { id: true, fullName: true },
-    orderBy: { fullName: "asc" },
-  })
+      orderBy: { date: "desc" },
+      take: 500, // Reasonable limit
+    }),
+    getCachedActiveEmployees(), // Cached for 5 minutes
+  ]);
 
   const pending = requests.filter((r) => r.status === "PENDING").length
 

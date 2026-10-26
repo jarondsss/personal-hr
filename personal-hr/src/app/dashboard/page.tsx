@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { getCachedJobTitleData } from "@/lib/cache";
 import DashboardClient from "./DashboardClient";
 
 export default async function DashboardPage() {
@@ -24,35 +25,53 @@ export default async function DashboardPage() {
   }[] = [];
 
   try {
-    // NOTE: DATABASE_URL memakai Supabase pooler dengan connection_limit=1,
-    // jadi query harus sekuensial. Promise.all dengan banyak query konkuren
-    // menyebabkan "Timed out fetching a new connection from the connection pool".
-    employeeCount = await prisma.employee.count();
-    activeProjects = await prisma.project.count();
-    pendingLeaves = await prisma.leaveRequest.count({ where: { status: "PENDING" } });
-    pendingOvertimes = await prisma.overtimeRequest.count({ where: { status: "PENDING" } });
-    expiringContracts = await prisma.employee.findMany({
-      where: { endContract: { not: null } },
-      select: { id: true, fullName: true, jobTitle: true, endContract: true, isActive: true },
-      orderBy: { endContract: "asc" },
-    });
-    analyticsEmployees = await prisma.employee.findMany({
-      select: { salary: true, jobTitle: true, status: true },
-    });
-    analyticsProjects = await prisma.project.findMany({
-      select: { id: true, _count: { select: { members: true } } },
-    });
-    analyticsJobTitles = await prisma.masterData.findMany({
-      where: { category: "JOB_TITLE" },
-      select: { value: true, label: true },
-    });
-    const payrollMonthsResult = await prisma.payroll.groupBy({
-      by: ["month", "year"],
-      _count: { id: true },
-      _sum: { basicSalary: true, overtimePay: true, deductions: true, netSalary: true },
-      orderBy: [{ year: "desc" }, { month: "desc" }],
-    });
-    payrollMonths = payrollMonthsResult;
+    // Parallel queries now possible with connection_limit=20 + cached job title data
+    const [
+      empCount,
+      projCount,
+      pendLeaves,
+      pendOvertimes,
+      contracts,
+      empAnalytics,
+      projAnalytics,
+      jobTitleData,
+      payrollData,
+    ] = await Promise.all([
+      prisma.employee.count(),
+      prisma.project.count(),
+      prisma.leaveRequest.count({ where: { status: "PENDING" } }),
+      prisma.overtimeRequest.count({ where: { status: "PENDING" } }),
+      prisma.employee.findMany({
+        where: { endContract: { not: null }, isActive: true },
+        select: { id: true, fullName: true, jobTitle: true, endContract: true, isActive: true },
+        orderBy: { endContract: "asc" },
+        take: 50, // Limit to prevent memory issues
+      }),
+      prisma.employee.findMany({
+        select: { salary: true, jobTitle: true, status: true },
+      }),
+      prisma.project.findMany({
+        select: { id: true, _count: { select: { members: true } } },
+      }),
+      getCachedJobTitleData(), // Cached for 1 hour - returns array
+      prisma.payroll.groupBy({
+        by: ["month", "year"],
+        _count: { id: true },
+        _sum: { basicSalary: true, overtimePay: true, deductions: true, netSalary: true },
+        orderBy: [{ year: "desc" }, { month: "desc" }],
+        take: 12, // Last 12 months only
+      }),
+    ]);
+
+    employeeCount = empCount;
+    activeProjects = projCount;
+    pendingLeaves = pendLeaves;
+    pendingOvertimes = pendOvertimes;
+    expiringContracts = contracts;
+    analyticsEmployees = empAnalytics;
+    analyticsProjects = projAnalytics;
+    analyticsJobTitles = jobTitleData;
+    payrollMonths = payrollData;
   } catch (err) {
     console.error("Failed to load dashboard data:", err);
   }
