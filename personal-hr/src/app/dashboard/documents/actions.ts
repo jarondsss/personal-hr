@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { writeFile, unlink, readFile } from "fs/promises"
+import { readFile } from "fs/promises"
 import path from "path"
 import PizZip from "pizzip"
 import Docxtemplater from "docxtemplater"
@@ -12,7 +12,8 @@ export async function getDocumentTemplates() {
   await getRequiredAdminSession()
 
   return await prisma.documentTemplate.findMany({
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, name: true, fileName: true, createdAt: true, updatedAt: true }
   })
 }
 
@@ -20,34 +21,25 @@ export async function uploadTemplate(formData: FormData) {
   await getRequiredAdminSession()
 
   const name = formData.get("name")?.toString()
-  const file = formData.get("file") as File
+  const file = formData.get("file")
 
-  if (!name || !file) throw new Error("Name and file are required")
-  if (!file.name.endsWith('.docx')) throw new Error("Only .docx files are allowed")
+  if (!name || !(file instanceof File)) throw new Error("Name and file are required")
+  if (!file.name.toLowerCase().endsWith('.docx')) throw new Error("Only .docx files are allowed")
+  if (file.size > 2 * 1024 * 1024) throw new Error("Template must be under 2MB")
 
   const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
   const bytes = await file.arrayBuffer()
   const buffer = Buffer.from(bytes)
 
-  const filePath = path.join(process.cwd(), 'public/templates', fileName)
-  await writeFile(filePath, buffer)
-
   await prisma.documentTemplate.create({
-    data: { name, fileName }
+    data: { name, fileName, content: buffer }
   })
 
   revalidatePath('/dashboard/documents')
 }
 
-export async function deleteTemplate(id: string, fileName: string) {
+export async function deleteTemplate(id: string) {
   await getRequiredAdminSession()
-
-  const filePath = path.join(process.cwd(), 'public/templates', fileName)
-  try {
-    await unlink(filePath)
-  } catch (error) {
-    console.error("File already deleted or missing", error)
-  }
 
   await prisma.documentTemplate.delete({
     where: { id }
@@ -71,8 +63,7 @@ export async function generateEmployeeContract(employeeId: string) {
     })
     if (!template) return { error: "Contract template not found. Please upload a PKWT template first." }
 
-    const filePath = path.join(process.cwd(), 'public/templates', template.fileName)
-    const content = await readFile(filePath, 'binary')
+    const content = template.content ?? await readFile(path.join(process.cwd(), 'public/templates', template.fileName))
     const zip = new PizZip(content)
 
     const doc = new Docxtemplater(zip, {

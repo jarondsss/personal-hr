@@ -69,7 +69,7 @@ export default function DocumentGenerator({
         import("docxtemplater"),
         import("pizzip"),
       ])
-      const response = await fetch(`/templates/${tpl.fileName}`)
+      const response = await fetch(`/api/documents/templates/${encodeURIComponent(tpl.id)}`)
       if (!response.ok) throw new Error("Template file not found on server")
 
       const arrayBuffer = await response.arrayBuffer()

@@ -18,16 +18,16 @@ export default function TemplateManager({ templates }: { templates: any[] }) {
       form.reset()
     } catch (err) {
       console.error(err)
-      alert("Failed to upload template")
+      alert(err instanceof Error ? err.message : "Failed to upload template")
     } finally {
       setIsUploading(false)
     }
   }
 
-  const handleDelete = async (id: string, fileName: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("Delete this template?")) return
     try {
-      await deleteTemplate(id, fileName)
+      await deleteTemplate(id)
     } catch (err: any) {
       alert(err.message || "Failed to delete")
     }
@@ -77,7 +77,7 @@ export default function TemplateManager({ templates }: { templates: any[] }) {
                   <td className="text-xs font-mono">{tpl.fileName}</td>
                   <td className="text-right">
                     <button
-                      onClick={() => handleDelete(tpl.id, tpl.fileName)}
+                      onClick={() => handleDelete(tpl.id)}
                       className="btn btn-ghost btn-sm text-error"
                     >
                       <Trash2 size={16} />
