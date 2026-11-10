@@ -6,19 +6,19 @@ import { revalidateTag } from 'next/cache'
  */
 
 export function revalidateMasterData() {
-  revalidateTag('master-data')
+  revalidateTag('master-data', 'max')
 }
 
 export function revalidateEmployees() {
-  revalidateTag('employees')
+  revalidateTag('employees', 'max')
 }
 
 export function revalidateCompanyProfile() {
-  revalidateTag('company-profile')
+  revalidateTag('company-profile', 'max')
 }
 
 export function revalidateAll() {
-  revalidateTag('master-data')
-  revalidateTag('employees')
-  revalidateTag('company-profile')
+  revalidateTag('master-data', 'max')
+  revalidateTag('employees', 'max')
+  revalidateTag('company-profile', 'max')
 }
